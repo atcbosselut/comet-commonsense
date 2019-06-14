@@ -40,7 +40,8 @@ python scripts/data/make_atomic_data_loader.py
 python scripts/data/make_conceptnet_data_loader.py
 ```
 
-For the ATOMIC dataset, if you'd like to make a data loader for only a subset of the relation types, comment out any relations in lines 17-25. For ConceptNet if you'd like to map the relations to natural language analogues, set ```opt.data.rel = "language"```
+For the ATOMIC KG, if you'd like to make a data loader for only a subset of the relation types, comment out any relations in lines 17-25. 
+For ConceptNet if you'd like to map the relations to natural language analogues, set ```opt.data.rel = "language"``` in line 26. If you want to initialize unpretrained relation tokens, set ```opt.data.rel = "relation"```
 
 <h1> Setting the ATOMIC configuration files </h1>
 
