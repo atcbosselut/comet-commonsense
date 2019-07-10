@@ -248,8 +248,16 @@ class BeamSampler(TopKSampler):
             expanded_ended = ended.unsqueeze(1).repeat(1, self.opt.eval.bs)
             hypothesis_mask = expanded_ended * self.kill_mask + (1 - expanded_ended)
 
-            current_beam_lls = beam_losses[-1].unsqueeze(1).repeat(
-                1, self.opt.eval.bs).view(self.opt.eval.bs**2)
+            paper_results = False
+
+            if paper_results:
+                # Results from paper with slightly buggy beam search
+                current_beam_lls = beam_lls.unsqueeze(1).repeat(
+                    1, self.opt.eval.bs).view(self.opt.eval.bs**2)
+            else:
+                # Current beam search implementation
+                current_beam_lls = beam_losses[-1].unsqueeze(1).repeat(
+                    1, self.opt.eval.bs).view(self.opt.eval.bs**2)
 
             # Compute losses of hypotheses, masking those that have ended
             hyp_beam_lls = (hyp_beam_lls.view(self.opt.eval.bs**2) *

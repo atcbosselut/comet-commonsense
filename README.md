@@ -124,3 +124,9 @@ Or run the following script to interactively generate arbitrary ConceptNet tuple
 ```
 python scripts/interactive/conceptnet_single_example.py --model_file pretrained_models/conceptnet_pretrained_model.pickle
 ```
+
+<h1> Bug Fixes </h1>
+
+<h3>Beam Search </h3>
+
+In BeamSampler in `sampler.py`, there was a bug that made the scoring function for each beam candidate slightly different from normalized loglikelihood. Only sequences decoded with beam search are affected by this. It's been fixed in the repository, and seems to have little discernible impact on the quality of the generated sequences. If you'd like to replicate the exact paper results, however, you'll need to use the buggy beam search from before, by setting `paper_results = True` in Line 251 of `sampler.py`
