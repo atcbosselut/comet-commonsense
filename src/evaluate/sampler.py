@@ -247,7 +247,8 @@ class BeamSampler(TopKSampler):
             # Compute masks and expand beam
             expanded_ended = ended.unsqueeze(1).repeat(1, self.opt.eval.bs)
             hypothesis_mask = expanded_ended * self.kill_mask + (1 - expanded_ended)
-            current_beam_lls = beam_lls.unsqueeze(1).repeat(
+
+            current_beam_lls = beam_losses[-1].unsqueeze(1).repeat(
                 1, self.opt.eval.bs).view(self.opt.eval.bs**2)
 
             # Compute losses of hypotheses, masking those that have ended
