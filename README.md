@@ -114,7 +114,7 @@ then run the following script:
 bash scripts/classify/classify.sh /path/to/generations_file/without/extension
 ```
 
-then generations file should be in pickle format
+the generations file should be in pickle format
 
 <h1> Playing Around in Interactive Mode </h1>
 
