@@ -130,3 +130,16 @@ python scripts/interactive/conceptnet_single_example.py --model_file pretrained_
 <h3>Beam Search </h3>
 
 In BeamSampler in `sampler.py`, there was a bug that made the scoring function for each beam candidate slightly different from normalized loglikelihood. Only sequences decoded with beam search are affected by this. It's been fixed in the repository, and seems to have little discernible impact on the quality of the generated sequences. If you'd like to replicate the exact paper results, however, you'll need to use the buggy beam search from before, by setting `paper_results = True` in Line 251 of `sampler.py`
+
+<h1> References </h1> 
+
+Please cite this repository using the following reference:
+
+```
+@inproceedings{Bosselut2019COMETCT,
+  title={COMET: Commonsense Transformers for Automatic Knowledge Graph Construction},
+  author={Antoine Bosselut and Hannah Rashkin and Maarten Sap and Chaitanya Malaviya and Asli Çelikyilmaz and Yejin Choi},
+  booktitle={Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  year={2019}
+}
+```
