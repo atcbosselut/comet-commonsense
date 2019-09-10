@@ -108,13 +108,11 @@ wget https://ttic.uchicago.edu/~kgimpel/comsense_resources/ckbc-demo.tar.gz
 tar -xvzf ckbc-demo.tar.gz
 ```
 
-then run the following script:
+then run the following script on the the generations file, which should be in .pickle format:
 
 ```
-bash scripts/classify/classify.sh /path/to/generations_file/without/extension
+bash scripts/classify/classify.sh /path/to/generations_file/without/pickle/extension
 ```
-
-the generations file should be in pickle format
 
 <h1> Playing Around in Interactive Mode </h1>
 
