@@ -99,6 +99,23 @@ If you want to generate with a larger beam size, run the generation script
 python scripts/generate/generate_conceptnet_beam_search.py --beam 10 --split $DATASET_SPLIT --model_name /path/to/model/file
 ```
 
+<h3> Classifying Generated Tupes </h3>
+
+To run the classifier from Li et al., 2016 on your generated tuples to evaluate correctness, first download the pretrained model from:
+
+```
+wget https://ttic.uchicago.edu/~kgimpel/comsense_resources/ckbc-demo.tar.gz
+tar -xvzf ckbc-demo.tar.gz
+```
+
+then run the following script:
+
+```
+bash scripts/classify/classify.sh /path/to/generations_file/without/extension
+```
+
+then generations file should be in pickle format
+
 <h1> Playing Around in Interactive Mode </h1>
 
 First, download the pretrained models from the following link:
