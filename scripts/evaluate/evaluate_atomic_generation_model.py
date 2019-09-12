@@ -124,7 +124,8 @@ for eval_categories in set_of_categories:
         opt, n_vocab, n_ctx, n_special, load=False)
 
     print("Loading Weights")
-    model.load_state_dict(model_file['state_dict'])
+    models.load_state_dict(model, model_file["state_dict"])
+
     print("Done Loading Weights")
 
     model.eval()

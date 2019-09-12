@@ -96,7 +96,11 @@ def main(num):
         cfg.device = config.gpu_index
         cfg.do_gpu = True
         torch.cuda.set_device(cfg.device)
-        model.cuda(cfg.device)
+        if config.multigpu:
+            model = models.multi_gpu(
+                model, config.gpu_indices).cuda()
+        else:
+            model.cuda(cfg.device)
         print("Done.")
 
     print("Training")

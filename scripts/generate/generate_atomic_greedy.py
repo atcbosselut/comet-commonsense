@@ -102,7 +102,7 @@ print(opt.exp)
 model = models.make_model(
     opt, n_vocab, n_ctx, 0, load=False, return_acts=False, return_probs=True)
 
-model.load_state_dict(model_stuff["state_dict"])
+models.load_state_dict(model, model_stuff["state_dict"])
 
 if config.gpu_mode:
     print("Pushing to GPU: {}".format(config.gpu_index))

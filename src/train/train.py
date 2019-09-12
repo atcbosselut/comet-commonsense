@@ -80,7 +80,7 @@ class Trainer(object):
         else:
             self.logger = SummaryWriter(utils.make_name(
                 self.opt, prefix="logs/", eval_=True, do_epoch=False))
-        print("Logging Tensorboard Files at: {}".format(self.logger.log_dir))
+        print("Logging Tensorboard Files at: {}".format(self.logger.logdir))
 
     def stop_logger(self):
         self.logger.close()
