@@ -58,15 +58,18 @@ final_sequences = []
 do_beams = False
 
 for idx, gen in enumerate(gens):
-    e1 = gen["e1"]
+    e1 = gen["e1"].strip()
     r = gen["r"]
 
-    if "rel_language" in args.gens_file:
+    if "rel_language" in args.gens_file or r.split(" ")[0] != r:
         r = combine_into_words[r.strip()]
     else:
         r = r.strip("<>")
 
-    sequences = [gen['sequence']]
+    if "sequence" in gen:
+        sequences = [gen['sequence']]
+    else:
+        sequences = gen['beams']
 
     for seq in sequences:
         final_sequences.append("{}\t{}\t{}\t1".format(r, e1, seq))
