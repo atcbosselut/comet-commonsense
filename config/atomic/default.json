@@ -11,5 +11,6 @@
     "learning_rate_schedule": "warmup_linear",
     "learning_rate_warmup": 0.002,
     "l2": 0.01,
-    "vector_l2": "T"
+    "vector_l2": "T",
+    "evaluate_sequences": 10000
 }

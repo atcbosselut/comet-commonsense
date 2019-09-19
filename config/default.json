@@ -10,7 +10,7 @@
     "eval_sampler": "greedy",
     "num_sequences": 1,
     "generate_sequences": 1000,
-    "evaluate_sequences": 1000,
+    "evaluate_sequences": 10000,
 
     "random_seed": 123,
     "optimizer": "adam",
