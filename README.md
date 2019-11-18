@@ -29,8 +29,6 @@ pip install tqdm
 pip install pandas
 pip install ipython
 ```
-
-
 <h1> Making the Data Loaders </h1>
 
 Run the following scripts to pre-initialize a data loader for ATOMIC or ConceptNet:
@@ -113,6 +111,7 @@ then run the following script on the the generations file, which should be in .p
 ```
 bash scripts/classify/classify.sh /path/to/generations_file/without/pickle/extension
 ```
+If you use this classification script, you'll also need Python 2.7 installed.
 
 <h1> Playing Around in Interactive Mode </h1>
 
