@@ -1,0 +1,8 @@
+transformers
+torch
+torchvision
+pandas
+ftfy
+spacy
+tensorboardX
+nltk
