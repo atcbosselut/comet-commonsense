@@ -20,10 +20,8 @@ from tqdm import tqdm, trange
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
-from transformers import (AdamW, GPT2Config, GPT2LMHeadModel, GPT2Tokenizer, OpenAIGPTConfig,
-                          OpenAIGPTLMHeadModel, OpenAIGPTTokenizer, get_linear_schedule_with_warmup)
-
-from src.fine_tune.common import load_atomic_data_for_training
+from transformers import AdamW, get_linear_schedule_with_warmup
+from src.fine_tune.common import load_atomic_data_for_training, init_model
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -36,12 +34,6 @@ logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-MODEL_CLASSES = {
-    "gpt2": (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
-    "openai-gpt": (OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer)
-}
-
-
 class TextDataset(Dataset):
     """
     Pairs of sentences: situation [SEP] RoT
@@ -50,7 +42,7 @@ class TextDataset(Dataset):
         assert os.path.isfile(file_path)
         directory, filename = os.path.split(file_path)
         cached_features_file = os.path.join(
-            directory, args.model_name_or_path + "_cached_lm_" + str(block_size) + "_" + filename)
+            directory, args.model_type + "_cached_lm_" + str(block_size) + "_" + filename)
 
         if os.path.exists(cached_features_file) and not args.overwrite_cache:
             logger.info(f"Loading features from cached file {cached_features_file}")
@@ -66,10 +58,13 @@ class TextDataset(Dataset):
                 pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def __len__(self):
-        return len(self.examples)
+        return len(self.examples["examples"])
 
     def __getitem__(self, item):
-        return torch.tensor(self.examples[item])
+        input_length = self.examples["input_lengths"][item]
+        example = self.examples["examples"][item]
+        input_mask = [0] * (input_length - 1) + [1] * (len(example) - input_length + 1)
+        return {"examples": torch.tensor(self.examples["examples"][item]), "input_mask": torch.tensor(input_mask)}
 
 
 def main():
@@ -78,7 +73,7 @@ def main():
     # Required parameters
     parser.add_argument("--train_file", default="v4_atomic_train.csv", type=str,
                         required=True, help="The input training CSV file.")
-    parser.add_argument("--out_dir", default=None, type=str, required=True, help="Out directory (predictions/checkpoints).")
+    parser.add_argument("--out_dir", default=None, type=str, required=True, help="Out directory for checkpoints.")
 
     # Other parameters
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
@@ -86,25 +81,25 @@ def main():
     parser.add_argument("--do_eval", action="store_true", help="Whether to run eval on the dev set.")
     parser.add_argument("--do_lower_case", action="store_true", help="Set this flag if you are using an uncased model.")
     parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
-    parser.add_argument("--eval_batch_size", default=4, type=int, help="Batch size for evaluation.")
+    parser.add_argument("--eval_batch_size", default=64, type=int, help="Batch size for evaluation.")
     parser.add_argument("--eval_data_file", default=None, type=str, help="Validation file")
     parser.add_argument("--eval_during_train", action="store_true", help="Evaluate at each train logging step.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1, help="Steps before backward pass.")
-    parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
-    parser.add_argument("--logging_steps", type=int, default=1500, help="Log every X updates steps.")
+    parser.add_argument("--learning_rate", default=5e-6, type=float, help="The initial learning rate for Adam.")
+    parser.add_argument("--logging_steps", type=int, default=10000, help="Log every X updates steps.")
     parser.add_argument("--max_input_length", default=50, type=int, help="Maximum input event length in words.")
     parser.add_argument("--max_output_length", default=50, type=int, help="Maximum output event length in words.")
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
     parser.add_argument("--max_steps", default=-1, type=int, help="If > 0: total number of training steps to perform.")
     parser.add_argument("--model_name_or_path", default="openai-gpt", type=str, help="LM checkpoint for initialization.")
     parser.add_argument("--model_type", default="openai-gpt", type=str, help="The LM architecture to be fine-tuned.")
-    parser.add_argument("--num_train_epochs", default=1.0, type=float, help="Number of training epochs to perform.")
+    parser.add_argument("--num_train_epochs", default=2.0, type=float, help="Number of training epochs to perform.")
     parser.add_argument("--overwrite_cache", action="store_true", help="Overwrite the cached data.")
     parser.add_argument("--overwrite_out_dir", action="store_true", help="Overwrite the output directory.")
-    parser.add_argument("--save_steps", type=int, default=1500, help="Save checkpoint every X updates steps.")
+    parser.add_argument("--save_steps", type=int, default=10000, help="Save checkpoint every X updates steps.")
     parser.add_argument("--save_total_limit", type=int, default=None, help="Maximum number of checkpoints to keep")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for initialization.")
-    parser.add_argument("--train_batch_size", default=4, type=int, help="Batch size for training.")
+    parser.add_argument("--train_batch_size", default=64, type=int, help="Batch size for training.")
     parser.add_argument("--warmup_steps", default=0, type=int, help="Linear warmup over warmup_steps.")
     parser.add_argument("--weight_decay", default=0.0, type=float, help="Weight decay if we apply some.")
     args = parser.parse_args()
@@ -124,11 +119,8 @@ def main():
     set_seed(args)
 
     # Load the models
-    config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
-    config = config_class.from_pretrained(args.model_name_or_path)
-    tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
+    tokenizer, model = init_model(args.model_name_or_path, device=args.device, do_lower_case=args.do_lower_case)
     args.block_size = tokenizer.max_len_single_sentence
-    model = model_class.from_pretrained(args.model_name_or_path, config=config)
     model.to(args.device)
     logger.info(f"Training/evaluation parameters {args}")
 
@@ -142,10 +134,14 @@ def main():
     config = cfg.read_config(cfg.load_config(config_file))
     opt, meta = cfg.get_parameters(config)
 
-    # Add special tokens
-    tokenizer.add_tokens([f"<{cat}>" for cat in opt.data.categories] +
-                         ["<blank>", "<eos>", "personx", "persony"])
-    model.resize_token_embeddings(len(tokenizer))
+    # Add special tokens (if loading a model before fine-tuning)
+    if len(tokenizer.added_tokens_encoder) == 0:
+        tokenizer.add_tokens([f"<{cat}>" for cat in opt.data.categories] +
+                             ["<blank>", "<eos>", "personx", "persony"])
+        model.resize_token_embeddings(len(tokenizer))
+
+    args.relation_ids = {token_id for token, token_id in tokenizer.added_tokens_encoder.items()
+                         if token not in {"<blank>", "<eos>", "personx", "persony"}}
 
     # Training
     if args.do_train:
@@ -169,8 +165,8 @@ def main():
         torch.save(args, os.path.join(args.out_dir, "training_args.bin"))
 
         # Load a trained model and vocabulary that you have fine-tuned
-        model = model_class.from_pretrained(args.out_dir)
-        tokenizer = tokenizer_class.from_pretrained(args.out_dir, do_lower_case=args.do_lower_case)
+        tokenizer, model = init_model(args.out_dir, device=args.device, do_lower_case=args.do_lower_case)
+        args.block_size = tokenizer.max_len_single_sentence
         model.to(args.device)
 
     # Evaluation
@@ -179,7 +175,7 @@ def main():
         checkpoint = args.out_dir
         logger.info(f"Evaluate the following checkpoint: {checkpoint}")
         prefix = checkpoint.split("/")[-1] if checkpoint.find("checkpoint") != -1 else ""
-        model = model_class.from_pretrained(checkpoint)
+        _, model = init_model(checkpoint, device=args.device)
         model.to(args.device)
         result = evaluate(args, opt.data.categories, model, tokenizer, prefix=prefix)
         results.update(result)
@@ -383,17 +379,24 @@ def train(args, categories, train_dataset, model, tokenizer):
 
 
 def get_loss(args, batch, model):
-    """
-    Encoder-decoder loss
-    """
-    inputs, labels = (batch, batch)
-    inputs = inputs.to(args.device)
-    labels = labels.to(args.device)
-    lm_logits = model(inputs)[0]
-    shift_logits = lm_logits[..., args.max_input_length:-1, :].contiguous()
-    shift_labels = labels[..., args.max_input_length+1  :].contiguous()
-    loss_fct = CrossEntropyLoss()
-    loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+    token_ids = batch["examples"].to(args.device)
+    shift_labels = token_ids[..., 1:].contiguous().view(-1)
+
+    input_mask = batch["input_mask"].to(args.device)
+    shift_input_mask = input_mask[..., 1:].contiguous().view(-1)
+
+    # We want to only count the conditioned generation
+    lm_logits = model(token_ids)[0]
+    shift_logits = lm_logits[..., :-1, :].contiguous()
+    shift_logits = shift_logits.view(-1, shift_logits.size(-1))
+
+    loss_fct = CrossEntropyLoss(reduction="none")
+    loss = loss_fct(shift_logits, shift_labels)
+
+    loss_mask = torch.mul(shift_input_mask, (shift_labels > 0).long())
+
+    loss = torch.mul(loss_mask, loss)
+    loss = loss.sum() / loss_mask.nonzero().size(0)
     return loss
 
 

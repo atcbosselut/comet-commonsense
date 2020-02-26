@@ -1,4 +1,4 @@
-transformers
+transformers==2.4.1
 torch
 torchvision
 pandas

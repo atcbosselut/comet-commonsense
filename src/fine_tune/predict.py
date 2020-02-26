@@ -26,23 +26,24 @@ def main():
     parser.add_argument("--model_type", default="openai-gpt", type=str, help="The LM architecture to be fine-tuned.")
 
     # Optional
-    parser.add_argument("--max_length", default=25, type=int, required=False, help="Maximum text length")
+    parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")
     parser.add_argument("--k", default=0, type=int, required=False, help="k for top k sampling")
     parser.add_argument("--p", default=0, type=float, required=False, help="p for nucleus sampling")
     parser.add_argument("--num_beams", default=0, type=int, required=False, help="number of beams in beam search")
     parser.add_argument("--num_samples", default=1, type=int, required=False, help="how many texts to generate")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")
+    parser.add_argument("--do_lower_case", action="store_true", help="Set this flag if you are using an uncased model.")
     args = parser.parse_args()
     logger.debug(args)
 
-    if (args.k == args.p == args.num_beams == 0) or (
-            sum([1 if i > 0 else 0 for i in [args.k, args.p, args.num_beams]]) > 1):
-        raise ValueError("Exactly one of p, k, or num_beams should be set to a non-zero value.")
+    # if (args.k == args.p == args.num_beams == 0) or (
+    #         sum([1 if i > 0 else 0 for i in [args.k, args.p, args.num_beams]]) > 1):
+    #     raise ValueError("Exactly one of p, k, or num_beams should be set to a non-zero value.")
 
     device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() and args.device != "cpu" else "cpu")
     logger.debug(f"Initializing {args.device}")
 
-    model, tokenizer = init_model(args.model_name_or_path, args.model_type, device)
+    tokenizer, model = init_model(args.model_name_or_path, device=device, do_lower_case=args.do_lower_case)
     categories = get_atomic_categories()
 
     logger.info(f"Loading ATOMIC examples from {args.in_file}")
