@@ -15,7 +15,7 @@ echo "gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
 gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
 echo "mkdir -p ~/.comet-data/models/"
 mkdir -p ~/.comet-data/models/;
-echo "mv atomic_pretrained_models.zip ~/.comet-data/models/"
-mv atomic_pretrained_models.zip ~/.comet-data/models/;
-echo "unzip ~/.comet-data/models/atomic_pretrained_models.zip"
-unzip ~/.comet-data/models/atomic_pretrained_models.zip;
+echo "mv atomic_pretrained_model.zip ~/.comet-data/models/"
+mv atomic_pretrained_model.zip ~/.comet-data/models/;
+echo "unzip ~/.comet-data/models/atomic_pretrained_model.zip"
+unzip ~/.comet-data/models/atomic_pretrained_model.zip;
