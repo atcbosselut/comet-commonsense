@@ -4,18 +4,18 @@
 echo "mkdir -p ~/.comet-data/data/atomic"
 mkdir -p ~/.comet-data/data/atomic;
 echo "wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz -O ~/.comet-data/data/atomic/atomic_data.tgz"
-wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz -O ~/.comet-data/data/atomic/atomic_data.tgz;
-echo "tar -xvzf ~/.comet-data/data/atomic/atomic_data.tgz"
-tar -xvzf ~/.comet-data/data/atomic/atomic_data.tgz;
-echo "rm ~/.comet-data/data/atomic/atomic_data.tgz"
-rm ~/.comet-data/data/atomic/atomic_data.tgz;
+wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz;
+echo "tar -xvzf atomic_data.tgz -C ~/.comet-data/data/atomic/"
+tar -xvzf atomic_data.tgz -C ~/.comet-data/data/atomic/;
+echo "rm atomic/atomic_data.tgz"
+rm atomic_data.tgz;
 
 # Get Pre-trained COMET model
-echo "gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
-gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
 echo "mkdir -p ~/.comet-data/models/"
 mkdir -p ~/.comet-data/models/;
-echo "mv atomic_pretrained_model.zip ~/.comet-data/models/"
-mv atomic_pretrained_model.zip ~/.comet-data/models/;
-echo "unzip ~/.comet-data/models/atomic_pretrained_model.zip"
-unzip ~/.comet-data/models/atomic_pretrained_model.zip;
+echo "gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
+gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
+echo "unzip atomic_pretrained_model.zip -d ~/.comet-data/models/"
+unzip atomic_pretrained_model.zip -d ~/.comet-data/models/;
+echo "rm atomic_pretrained_model.zip"
+rm atomic_pretrained_model.zip;
