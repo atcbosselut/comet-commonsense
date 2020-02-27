@@ -30,6 +30,17 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    install_requires=[
+        "torch",
+        "torchvision",
+        "transformers==2.4.1",
+        "pandas",
+        "ftfy",
+        "spacy",
+        "tensorboardX",
+        "nltk",
+        "gdown"
+    ],
     python_requires='>=3.6',
     cmdclass={'install': PostInstallCommand, 'develop': PostInstallCommand}
 )
