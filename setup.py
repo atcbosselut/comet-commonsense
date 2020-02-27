@@ -13,11 +13,12 @@ class PostInstallCommand(install):
         install.run(self)
         script = os.path.join(os.getcwd(), "setup/download.sh")
         print(f"Running: {script}")
+        os.system("mkdir ~/.comet-data/")
         os.system(f"bash {script}")
 
 
 setuptools.setup(
-    name="comet-commonsense", # Replace with your own username
+    name="comet-commonsense",
     version="2.0",
     author="This version by Vered Shwartz. Original version by Antoine Bosselut.",
     description="COMET: Commonsense Transformers for Automatic Knowledge Graph Construction",
