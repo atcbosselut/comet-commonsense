@@ -19,12 +19,13 @@ class PostInstallCommand(install):
     def run(self):
         print(BUILD_DIR)
         install.run(self)
-        self.execute(_post_install, (self.install_lib,),
-                     msg="Running post install task")
+        self.execute(_post_install, msg="Running post install task")
 
 
-def _post_install(dir):
-    subprocess.call(["/bin/bash", "-c", os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")])
+def _post_install():
+    script = os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")
+    subprocess.call(["chmod", "+x", script])
+    subprocess.call(["/bin/bash", "-c", script])
 
 
 setuptools.setup(
