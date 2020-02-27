@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Get ATOMIC data
 wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz
 mkdir -p data/atomic

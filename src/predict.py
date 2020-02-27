@@ -22,8 +22,7 @@ def main():
     # Required
     parser.add_argument("--in_file", default=None, type=str, required=True, help="CSV ATOMIC file")
     parser.add_argument("--out_file", default=None, type=str, required=True, help="jsonl file with input+output events.")
-    parser.add_argument("--model_name_or_path", default="openai-gpt", type=str, help="LM checkpoint for initialization.")
-    parser.add_argument("--model_type", default="openai-gpt", type=str, help="The LM architecture to be fine-tuned.")
+    parser.add_argument("--model_name_or_path", default="models/atomic_pretrained_model", help="Pre-trained COMET model")
 
     # Optional
     parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")

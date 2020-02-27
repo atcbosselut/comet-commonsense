@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--in_file", default=None, type=str, required=True, help="CSV ATOMIC file")
 
     # Optional
-    parser.add_argument("--model_name_or_path", default="openai-gpt", type=str, help="LM checkpoint.")
+    parser.add_argument("--model_name_or_path", default="models/atomic_pretrained_model", help="Pre-trained COMET model")
     parser.add_argument("--num_samples", default=10, type=int, required=False, help="how many texts to generate")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")
     parser.add_argument("--max_length", default=25, type=int, required=False, help="Maximum text length")
