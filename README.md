@@ -1,151 +1,160 @@
-To run a generation experiment (either conceptnet or atomic), follow these instructions:
+This repository contains a new version of COMET trained on ATOMIC. 
 
+For the original version see: [atcbosselut/comet-commonsense](https://github.com/atcbosselut/comet-commonsense).
 
-<h1>First Steps</h1>
+### Changes from previous version
 
-First clone, the repo:
+1. Variable length input
 
-```
-git clone https://github.com/atcbosselut/comet-commonsense.git
-```
+### Installation
 
-Then run the setup scripts to acquire the pretrained model files from OpenAI, as well as the ATOMIC and ConceptNet datasets
-
-```
-bash scripts/setup/get_atomic_data.sh
-bash scripts/setup/get_conceptnet_data.sh
-bash scripts/setup/get_model_files.sh
-```
-
-Then install dependencies (assuming you already have Python 3.6 and Pytorch >= 1.0:
+Install the repository:
 
 ```
-pip install tensorflow
-pip install ftfy==5.1
-conda install -c conda-forge spacy
-python -m spacy download en
-pip install tensorboardX
-pip install tqdm
-pip install pandas
-pip install ipython
-```
-<h1> Making the Data Loaders </h1>
-
-Run the following scripts to pre-initialize a data loader for ATOMIC or ConceptNet:
-
-```
-python scripts/data/make_atomic_data_loader.py
-python scripts/data/make_conceptnet_data_loader.py
+pip install git+https://github.com/vered1986/comet-commonsense.git
 ```
 
-For the ATOMIC KG, if you'd like to make a data loader for only a subset of the relation types, comment out any relations in lines 17-25. 
-
-For ConceptNet if you'd like to map the relations to natural language analogues, set ```opt.data.rel = "language"``` in line 26. If you want to initialize unpretrained relation tokens, set ```opt.data.rel = "relation"```
-
-<h1> Setting the ATOMIC configuration files </h1>
-
-Open ```config/atomic/changes.json``` and set which categories you want to train, as well as any other details you find important. Check ```src/data/config.py``` for a description of different options. Variables you may want to change: batch_size, learning_rate, categories. See ```config/default.json``` and ```config/atomic/default.json``` for default settings of some of these variables.
-
-<h1> Setting the ConceptNet configuration files </h1>
-
-Open ```config/conceptnet/changes.json``` and set any changes to the degault configuration that you may want to vary in this experiment. Check ```src/data/config.py``` for a description of different options. Variables you may want to change: batch_size, learning_rate, etc. See ```config/default.json``` and ```config/conceptnet/default.json``` for default settings of some of these variables.
-
-<h1> Running the ATOMIC experiment </h1>
-
-<h3> Training </h3>
-For whichever experiment # you set in ```config/atomic/changes.json``` (e.g., 0, 1, 2, etc.), run:
+Download the ATOMIC dataset and the pre-trained COMET model:
 
 ```
-python src/main.py --experiment_type atomic --experiment_num #
+bash setup/download.sh
 ```
 
-<h3> Evaluation </h3>
+### Training
 
-Once you've trained a model, run the evaluation script:
-
-```
-python scripts/evaluate/evaluate_atomic_generation_model.py --split $DATASET_SPLIT --model_name /path/to/model/file
-```
-
-<h3> Generation </h3>
-
-Once you've trained a model, run the generation script for the type of decoding you'd like to do:
+Run `python -m src.train` with the following arguments:
 
 ```
-python scripts/generate/generate_atomic_beam_search.py --beam 10 --split $DATASET_SPLIT --model_name /path/to/model/file
-python scripts/generate/generate_atomic_greedy.py --split $DATASET_SPLIT --model_name /path/to/model/file
-python scripts/generate/generate_atomic_topk.py --k 10 --split $DATASET_SPLIT --model_name /path/to/model/file
+usage: train.py [-h] --train_file TRAIN_FILE --out_dir OUT_DIR
+                [--adam_epsilon ADAM_EPSILON] [--device DEVICE] [--do_eval]
+                [--do_lower_case] [--do_train]
+                [--eval_batch_size EVAL_BATCH_SIZE]
+                [--eval_data_file EVAL_DATA_FILE] [--eval_during_train]
+                [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]
+                [--learning_rate LEARNING_RATE]
+                [--logging_steps LOGGING_STEPS]
+                [--max_input_length MAX_INPUT_LENGTH]
+                [--max_output_length MAX_OUTPUT_LENGTH]
+                [--max_grad_norm MAX_GRAD_NORM] [--max_steps MAX_STEPS]
+                [--model_name_or_path MODEL_NAME_OR_PATH]
+                [--model_type MODEL_TYPE]
+                [--num_train_epochs NUM_TRAIN_EPOCHS] [--overwrite_cache]
+                [--overwrite_out_dir] [--save_steps SAVE_STEPS]
+                [--save_total_limit SAVE_TOTAL_LIMIT] [--seed SEED]
+                [--train_batch_size TRAIN_BATCH_SIZE]
+                [--warmup_steps WARMUP_STEPS] [--weight_decay WEIGHT_DECAY]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --train_file TRAIN_FILE
+                        The input training CSV file.
+  --out_dir OUT_DIR     Out directory for checkpoints.
+  --adam_epsilon ADAM_EPSILON
+                        Epsilon for Adam optimizer.
+  --device DEVICE       GPU number or 'cpu'.
+  --do_eval             Whether to run eval on the dev set.
+  --do_lower_case       Set this flag if you are using an uncased model.
+  --do_train            Whether to run training.
+  --eval_batch_size EVAL_BATCH_SIZE
+                        Batch size for evaluation.
+  --eval_data_file EVAL_DATA_FILE
+                        Validation file
+  --eval_during_train   Evaluate at each train logging step.
+  --gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS
+                        Steps before backward pass.
+  --learning_rate LEARNING_RATE
+                        The initial learning rate for Adam.
+  --logging_steps LOGGING_STEPS
+                        Log every X updates steps.
+  --max_input_length MAX_INPUT_LENGTH
+                        Maximum input event length in words.
+  --max_output_length MAX_OUTPUT_LENGTH
+                        Maximum output event length in words.
+  --max_grad_norm MAX_GRAD_NORM
+                        Max gradient norm.
+  --max_steps MAX_STEPS
+                        If > 0: total number of training steps to perform.
+  --model_name_or_path MODEL_NAME_OR_PATH
+                        LM checkpoint for initialization.
+  --model_type MODEL_TYPE
+                        The LM architecture to be fine-tuned.
+  --num_train_epochs NUM_TRAIN_EPOCHS
+                        Number of training epochs to perform.
+  --overwrite_cache     Overwrite the cached data.
+  --overwrite_out_dir   Overwrite the output directory.
+  --save_steps SAVE_STEPS
+                        Save checkpoint every X updates steps.
+  --save_total_limit SAVE_TOTAL_LIMIT
+                        Maximum number of checkpoints to keep
+  --seed SEED           Random seed for initialization.
+  --train_batch_size TRAIN_BATCH_SIZE
+                        Batch size for training.
+  --warmup_steps WARMUP_STEPS
+                        Linear warmup over warmup_steps.
+  --weight_decay WEIGHT_DECAY
+                        Weight decay if we apply some.
 ```
 
-<h1> Running the ConceptNet experiment </h1>
+### Evaluation
 
-<h3> Training </h3>
+The training script can be used to evaluate with perplexity. 
+Use the `--do_eval` flag and set `--eval_data_file` to the validation set. 
 
-For whichever experiment # you set in ```config/conceptnet/changes.json``` (e.g., 0, 1, 2, etc.), run:
 
-```
-python src/main.py --experiment_type conceptnet --experiment_num #
-```
-
-Development and Test set tuples are automatically evaluated and generated with greedy decoding during training
-
-<h3> Generation </h3>
-
-If you want to generate with a larger beam size, run the generation script
+To get BLEU scores, run `python -m src.evaluate` with the following arguments:
 
 ```
-python scripts/generate/generate_conceptnet_beam_search.py --beam 10 --split $DATASET_SPLIT --model_name /path/to/model/file
+usage: evaluate.py [-h] --in_file IN_FILE
+                   [--model_name_or_path MODEL_NAME_OR_PATH]
+                   [--num_samples NUM_SAMPLES] [--device DEVICE]
+                   [--max_length MAX_LENGTH] [--do_lower_case]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --in_file IN_FILE     CSV ATOMIC file
+  --model_name_or_path MODEL_NAME_OR_PATH
+                        LM checkpoint.
+  --num_samples NUM_SAMPLES
+                        how many texts to generate
+  --device DEVICE       GPU number or 'cpu'.
+  --max_length MAX_LENGTH
+                        Maximum text length
+  --do_lower_case       Set this flag if you are using an uncased model.
 ```
 
-<h3> Classifying Generated Tupes </h3>
+### Generation
 
-To run the classifier from Li et al., 2016 on your generated tuples to evaluate correctness, first download the pretrained model from:
-
-```
-wget https://ttic.uchicago.edu/~kgimpel/comsense_resources/ckbc-demo.tar.gz
-tar -xvzf ckbc-demo.tar.gz
-```
-
-then run the following script on the the generations file, which should be in .pickle format:
+To generate predictions for a dataset, run `python -m src.predict` with the following arguments:
 
 ```
-bash scripts/classify/classify.sh /path/to/generations_file/without/pickle/extension
-```
-If you use this classification script, you'll also need Python 2.7 installed.
+usage: predict.py [-h] --in_file IN_FILE --out_file OUT_FILE
+                  [--model_name_or_path MODEL_NAME_OR_PATH]
+                  [--model_type MODEL_TYPE] [--max_length MAX_LENGTH] [--k K]
+                  [--p P] [--num_beams NUM_BEAMS] [--num_samples NUM_SAMPLES]
+                  [--device DEVICE] [--do_lower_case]
 
-<h1> Playing Around in Interactive Mode </h1>
-
-First, download the pretrained models from the following link:
-
-```
-https://drive.google.com/open?id=1FccEsYPUHnjzmX-Y5vjCBeyRt1pLo8FB
-```
-
-Then untar the file:
-
-```
-tar -xvzf pretrained_models.tar.gz
-```
-
-Then run the following script to interactively generate arbitrary ATOMIC event effects:
-
-```
-python scripts/interactive/atomic_single_example.py --model_file pretrained_models/atomic_pretrained_model.pickle
-```
-
-Or run the following script to interactively generate arbitrary ConceptNet tuples:
-
-```
-python scripts/interactive/conceptnet_single_example.py --model_file pretrained_models/conceptnet_pretrained_model.pickle
+optional arguments:
+  -h, --help            show this help message and exit
+  --in_file IN_FILE     CSV ATOMIC file
+  --out_file OUT_FILE   jsonl file with input+output events.
+  --model_name_or_path MODEL_NAME_OR_PATH
+                        LM checkpoint for initialization.
+  --model_type MODEL_TYPE
+                        The LM architecture to be fine-tuned.
+  --max_length MAX_LENGTH
+                        Maximum text length
+  --k K                 k for top k sampling
+  --p P                 p for nucleus sampling
+  --num_beams NUM_BEAMS
+                        number of beams in beam search
+  --num_samples NUM_SAMPLES
+                        how many texts to generate
+  --device DEVICE       GPU number or 'cpu'.
+  --do_lower_case       Set this flag if you are using an uncased model.
 ```
 
-<h1> Bug Fixes </h1>
 
-<h3>Beam Search </h3>
-
-In BeamSampler in `sampler.py`, there was a bug that made the scoring function for each beam candidate slightly different from normalized loglikelihood. Only sequences decoded with beam search are affected by this. It's been fixed in the repository, and seems to have little discernible impact on the quality of the generated sequences. If you'd like to replicate the exact paper results, however, you'll need to use the buggy beam search from before, by setting `paper_results = True` in Line 251 of `sampler.py`
-
-<h1> References </h1> 
+### References 
 
 Please cite this repository using the following reference:
 

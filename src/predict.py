@@ -4,7 +4,7 @@ import torch
 import logging
 import argparse
 
-from src.fine_tune.common import init_model, generate_ending, get_atomic_categories, load_atomic_data_for_generation
+from src.common import init_model, generate_ending, get_atomic_categories, load_atomic_data_for_generation
 
 logging.basicConfig(
     format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',

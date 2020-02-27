@@ -6,3 +6,4 @@ ftfy
 spacy
 tensorboardX
 nltk
+gdown

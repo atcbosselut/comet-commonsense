@@ -3,10 +3,10 @@ import json
 import torch
 import logging
 import pandas as pd
-import utils.utils as utils
-import src.data.config as cfg
+import src.config as cfg
 
 from collections import defaultdict
+from distutils.dir_util import mkpath
 
 
 logging.basicConfig(
@@ -14,7 +14,6 @@ logging.basicConfig(
     datefmt = '%m/%d/%Y %H:%M:%S', level = logging.INFO)
 
 logger = logging.getLogger(__name__)
-
 
 from transformers.modeling_utils import PreTrainedModel
 from transformers import AutoTokenizer, AutoModelWithLMHead
@@ -114,7 +113,7 @@ def get_atomic_categories(eval_mode=True):
     """
     Return the names of ATOMIC categories
     """
-    utils.generate_config_files("atomic", "0", eval_mode=eval_mode)
+    generate_config_files("atomic", eval_mode=eval_mode)
     config_file = "config/atomic/config_0.json"
     config = cfg.read_config(cfg.load_config(config_file))
     opt, _ = cfg.get_parameters(config)
@@ -202,3 +201,45 @@ def load_atomic_data(in_file, categories):
         for _, row in df.iterrows()}
 
     return examples
+
+
+def generate_config_files(type_, name="base", eval_mode=False):
+    """
+    Generate a configuration file for ATOMIC (copied from the original code).
+    :return:
+    """
+    key = "0"
+    with open("config/default.json".format(type_), "r") as f:
+        base_config = json.load(f)
+    with open("config/{}/default.json".format(type_), "r") as f:
+        base_config_2 = json.load(f)
+    if eval_mode:
+        with open("config/{}/eval_changes.json".format(type_), "r") as f:
+            changes_by_machine = json.load(f)
+    else:
+        with open("config/{}/changes.json".format(type_), "r") as f:
+            changes_by_machine = json.load(f)
+
+    base_config.update(base_config_2)
+
+    if name in changes_by_machine:
+        changes = changes_by_machine[name]
+    else:
+        changes = changes_by_machine["base"]
+
+    replace_params(base_config, changes[key])
+
+    mkpath("config/{}".format(type_))
+
+    with open("config/{}/config_{}.json".format(type_, key), "w") as f:
+        json.dump(base_config, f, indent=4)
+
+
+def replace_params(base_config, changes):
+    for param, value in changes.items():
+        if isinstance(value, dict) and param in base_config:
+            replace_params(base_config[param], changes[param])
+        else:
+            base_config[param] = value
+
+

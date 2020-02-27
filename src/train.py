@@ -13,15 +13,14 @@ import pickle
 import logging
 import argparse
 import numpy as np
-import utils.utils as utils
-import src.data.config as cfg
+import src.config as cfg
 
 from tqdm import tqdm, trange
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
 from transformers import AdamW, get_linear_schedule_with_warmup
-from src.fine_tune.common import load_atomic_data_for_training, init_model
+from src.common import load_atomic_data_for_training, init_model, generate_config_files
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -125,7 +124,7 @@ def main():
     logger.info(f"Training/evaluation parameters {args}")
 
     # Generate configuration files depending on experiment being run
-    utils.generate_config_files("atomic", "0")
+    generate_config_files("atomic")
 
     # Loads the correct configuration file
     config_file = "config/atomic/config_0.json"
