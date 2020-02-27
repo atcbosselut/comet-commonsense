@@ -11,8 +11,8 @@ echo "rm ~/.comet-data/data/atomic/atomic_data.tgz"
 rm ~/.comet-data/data/atomic/atomic_data.tgz;
 
 # Get Pre-trained COMET model
-echo "gdown gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
-gdown gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
+echo "gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
+gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
 echo "mkdir -p ~/.comet-data/models/"
 mkdir -p ~/.comet-data/models/;
 echo "mv atomic_pretrained_models.zip ~/.comet-data/models/"
