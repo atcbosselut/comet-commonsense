@@ -13,14 +13,14 @@ import pickle
 import logging
 import argparse
 import numpy as np
-import src.config as cfg
+import comet.config as cfg
 
 from tqdm import tqdm, trange
 from torch.nn import CrossEntropyLoss
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
-from src.atomic import load_atomic_data, generate_config_files
+from comet.atomic import load_atomic_data, generate_config_files
 
 
 try:

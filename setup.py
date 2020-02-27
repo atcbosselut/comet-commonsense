@@ -6,7 +6,7 @@ from setuptools.command.install import install
 
 # Are we building from the repository or from a source distribution?
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-SRC_DIR = os.path.join(ROOT_DIR, 'src')
+SRC_DIR = os.path.join(ROOT_DIR, 'comet')
 BUILD_DIR = SRC_DIR if os.path.exists(SRC_DIR) else os.path.join(ROOT_DIR, '../..')
 
 

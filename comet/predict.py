@@ -3,8 +3,8 @@ import tqdm
 import logging
 import argparse
 
-from src.atomic import load_atomic_data
-from src.comet_model import PretrainedCometModel
+from comet.atomic import load_atomic_data
+from comet.comet_model import PretrainedCometModel
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)

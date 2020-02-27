@@ -5,8 +5,8 @@ import argparse
 from collections import defaultdict
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
-from src.atomic import load_atomic_data
-from src.comet_model import PretrainedCometModel
+from comet.atomic import load_atomic_data
+from comet.comet_model import PretrainedCometModel
 
 logging.basicConfig(
     format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',

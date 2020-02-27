@@ -6,7 +6,7 @@ from transformers.modeling_utils import PreTrainedModel
 from transformers import AutoTokenizer, AutoModelWithLMHead
 from transformers.tokenization_utils import PreTrainedTokenizer
 
-from src.atomic import get_atomic_categories
+from comet.atomic import get_atomic_categories
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)

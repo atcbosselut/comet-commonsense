@@ -1,7 +1,7 @@
 import json
 import logging
 import pandas as pd
-import src.config as cfg
+import comet.config as cfg
 
 from distutils.dir_util import mkpath
 
