@@ -45,7 +45,7 @@ setuptools.setup(
     install_requires=[
         "torch",
         "torchvision",
-        "transformers @ https://github.com/huggingface/transformers.git@master#egg=transformers",
+        "transformers==2.4.1",
         "pandas",
         "ftfy",
         "spacy",

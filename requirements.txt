@@ -1,4 +1,4 @@
-git+https://github.com/huggingface/transformers.git
+transformers==2.4.1
 torch
 torchvision
 pandas
@@ -6,4 +6,3 @@ ftfy
 spacy
 tensorboardX
 nltk
-gdown
