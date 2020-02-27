@@ -1,12 +1,10 @@
-import torch
 import logging
 import argparse
 
-from src.common import init_model, generate_ending, get_atomic_categories
+from src.comet_model import PretrainedCometModel
 
 logging.basicConfig(
-    format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
-    datefmt = '%m/%d/%Y %H:%M:%S', level = logging.INFO)
+    format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +22,11 @@ def main():
     parser.add_argument("--sampling_algorithm", type=str, default="topk-1")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")
     parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")
+    parser.add_argument("--do_lower_case", action="store_true", help="Set this flag if you are using an uncased model.")
     args = parser.parse_args()
     logger.debug(args)
 
-    device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() and args.device != "cpu" else "cpu")
-    logger.debug(f"Initializing {args.device}")
-
-    tokenizer, model = init_model(args.model_name_or_path, device=device, do_lower_case=True)
-    categories = set(get_atomic_categories())
+    comet_model = PretrainedCometModel(args.model_name_or_path, device=args.device, do_lower_case=args.do_lower_case)
 
     while True:
         input_event = "help"
@@ -72,15 +67,14 @@ def main():
 
         sampler = get_sampler(sampling_algorithm)
 
-        if category not in categories:
+        if category not in comet_model.categories:
             category = "all"
 
         fields = {"input_event": input_event, "effect_type": category, "results": {}}
-        categories_to_get = categories if category == "all" else [category]
+        categories_to_get = comet_model.categories if category == "all" else [category]
 
         for cat in categories_to_get:
-            tokens = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(f"{input_event} <{cat}>"))
-            fields["results"][cat] = generate_ending(model, tokenizer, tokens, device, length=args.max_length, **sampler)
+            fields["results"][cat] = comet_model.predict(input_event, cat, length=args.max_length, **sampler)
 
         print_atomic_sequence(fields)
 

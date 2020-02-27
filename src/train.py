@@ -17,10 +17,11 @@ import src.config as cfg
 
 from tqdm import tqdm, trange
 from torch.nn import CrossEntropyLoss
+from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
-from transformers import AdamW, get_linear_schedule_with_warmup
-from src.common import load_atomic_data_for_training, init_model, generate_config_files
+from src.atomic import load_atomic_data, generate_config_files
+
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -438,6 +439,36 @@ def evaluate(args, categories, model, tokenizer, prefix=""):
             writer.write(f"{key} = {result[key]}\n")
 
     return result
+
+
+def load_atomic_data_for_training(in_file, categories, tokenizer, max_input_length, max_output_length):
+    """
+    Loads an ATOMIC dataset file and
+    :param in_file: CSV ATOMIC file
+    :param categories: ATOMIC category list
+    :param tokenizer: LM tokenizer
+    :return: a list of tuples
+    """
+    examples = load_atomic_data(in_file, categories)
+    examples = [(f"{e1} <{cat}>", f"{e2} <eos>")
+                for e1, e1_relations in examples.items()
+                for cat, e2s in e1_relations.items()
+                for e2 in e2s]
+
+    process = lambda s: tokenizer.convert_tokens_to_ids(tokenizer.tokenize(s))
+    examples = [tuple(map(process, ex)) for ex in examples]
+
+    # Pad
+    max_input_length = min(max_input_length, max([len(ex[0]) for ex in examples]))
+    max_output_length = min(max_output_length, max([len(ex[1]) for ex in examples]))
+    max_length = max_input_length + max_output_length + 1
+    input_lengths = [len(ex[0]) for ex in examples]
+
+    examples = [ex[0] + ex[1] for ex in examples]
+    examples = [ex[:max_length] + [0] * max(0, max_length - len(ex)) for ex in examples]
+
+    examples = {"examples": examples, "input_lengths": input_lengths}
+    return examples
 
 
 if __name__ == "__main__":
