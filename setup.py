@@ -1,4 +1,5 @@
 import os
+import subprocess
 import setuptools
 
 from setuptools.command.install import install
@@ -12,9 +13,10 @@ class PostInstallCommand(install):
     def run(self):
         install.run(self)
         script = os.path.join(os.getcwd(), "setup/download.sh")
-        print(f"Running: {script}")
-        os.system("mkdir ~/.comet-data/")
-        os.system(f"bash {script}")
+        proc = subprocess.Popen(["bash", script], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        print(out)
+        print(err)
 
 
 setuptools.setup(
