@@ -19,7 +19,7 @@ class PostInstallCommand(install):
     def run(self):
         print(BUILD_DIR)
         install.run(self)
-        self.execute(_post_install, msg="Running post install task")
+        self.execute(_post_install, (), msg="Running post install task")
 
 
 def _post_install():
