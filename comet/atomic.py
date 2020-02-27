@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import pandas as pd
@@ -12,13 +13,15 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+CONFIG_DIR = os.path.expanduser("~/.comet-data/config/")
+
 
 def get_atomic_categories(eval_mode=True):
     """
     Return the names of ATOMIC categories
     """
     generate_config_files("atomic", eval_mode=eval_mode)
-    config_file = "config/atomic/config_0.json"
+    config_file = os.path.join(CONFIG_DIR, "atomic/config_0.json")
     config = cfg.read_config(cfg.load_config(config_file))
     opt, _ = cfg.get_parameters(config)
     return opt.data.categories
@@ -48,15 +51,15 @@ def generate_config_files(type_, name="base", eval_mode=False):
     :return:
     """
     key = "0"
-    with open("config/default.json".format(type_), "r") as f:
+    with open(os.path.join(CONFIG_DIR, "default.json").format(type_), "r") as f:
         base_config = json.load(f)
-    with open("config/{}/default.json".format(type_), "r") as f:
+    with open(os.path.join(CONFIG_DIR, "{}/default.json").format(type_), "r") as f:
         base_config_2 = json.load(f)
     if eval_mode:
-        with open("config/{}/eval_changes.json".format(type_), "r") as f:
+        with open(os.path.join(CONFIG_DIR, "{}/eval_changes.json").format(type_), "r") as f:
             changes_by_machine = json.load(f)
     else:
-        with open("config/{}/changes.json".format(type_), "r") as f:
+        with open(os.path.join(CONFIG_DIR, "{}/changes.json").format(type_), "r") as f:
             changes_by_machine = json.load(f)
 
     base_config.update(base_config_2)
@@ -68,9 +71,9 @@ def generate_config_files(type_, name="base", eval_mode=False):
 
     replace_params(base_config, changes[key])
 
-    mkpath("config/{}".format(type_))
+    mkpath(os.path.join(CONFIG_DIR, type_))
 
-    with open("config/{}/config_{}.json".format(type_, key), "w") as f:
+    with open(os.path.join(CONFIG_DIR, "{}/config_{}.json").format(type_, key), "w") as f:
         json.dump(base_config, f, indent=4)
 
 

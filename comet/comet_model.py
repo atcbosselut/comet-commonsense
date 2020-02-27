@@ -1,4 +1,5 @@
 import re
+import os
 import torch
 import logging
 
@@ -13,12 +14,17 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
+
 
 class PretrainedCometModel(object):
     """
     Pretrained COMET model, used for generating predictions.
     """
-    def __init__(self, model_name_or_path, device="cpu", do_lower_case=True):
+    def __init__(self,
+                 model_name_or_path=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
+                 device="cpu",
+                 do_lower_case=True):
         self.device = torch.device(f"cuda:{device}" if torch.cuda.is_available() and device != "cpu" else "cpu")
         logger.debug(f"Initializing {device}")
 
