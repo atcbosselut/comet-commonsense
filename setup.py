@@ -29,7 +29,7 @@ def _post_install():
 
 
 setuptools.setup(
-    name="comet-commonsense",
+    name="comet2",
     version="2.0",
     author="This version by Vered Shwartz. Original version by Antoine Bosselut.",
     description="COMET: Commonsense Transformers for Automatic Knowledge Graph Construction",
