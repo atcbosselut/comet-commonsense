@@ -17,8 +17,7 @@ class PostInstallCommand(install):
 
 
 def _post_install(dir):
-    subprocess.call(["/bin/bash", "-c", "../setup/download.sh"],
-                    cwd=os.path.join(dir, "comet-commonsense"))
+    subprocess.call(["/bin/bash", "-c", "../setup/download.sh"])
 
 
 setuptools.setup(
