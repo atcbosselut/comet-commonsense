@@ -9,7 +9,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-CATEGORIES = ["oReact", "oEffect", "oWant", "xAttr", "xEffect", "xIntent", "xNeed", "xReact", "xWant"],
+CATEGORIES = ["oReact", "oEffect", "oWant", "xAttr", "xEffect", "xIntent", "xNeed", "xReact", "xWant"]
 
 
 def get_atomic_categories():

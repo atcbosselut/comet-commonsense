@@ -1,4 +1,4 @@
-transformers==2.4.1
+git+https://github.com/huggingface/transformers.git
 torch
 torchvision
 pandas

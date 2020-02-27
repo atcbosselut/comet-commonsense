@@ -19,3 +19,5 @@ echo "unzip atomic_pretrained_model.zip -d ~/.comet-data/models/"
 unzip atomic_pretrained_model.zip -d ~/.comet-data/models/;
 echo "rm atomic_pretrained_model.zip"
 rm atomic_pretrained_model.zip;
+echo "mv ~/.comet-data/models/atomic_pretrained_model ~/.comet-data/models/atomic_pretrained_model_openai-gpt"
+mv ~/.comet-data/models/atomic_pretrained_model ~/.comet-data/models/atomic_pretrained_model_openai-gpt;
