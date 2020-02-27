@@ -1,3 +1,4 @@
+import os
 import tqdm
 import logging
 import argparse
@@ -14,6 +15,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
+DATA_DIR = os.path.expanduser("~/.comet-data/data/atomic/")
+
 
 def main():
     """
@@ -21,11 +25,10 @@ def main():
     """
     parser = argparse.ArgumentParser()
 
-    # Required
-    parser.add_argument("--in_file", default=None, type=str, required=True, help="CSV ATOMIC file")
-
-    # Optional
-    parser.add_argument("--model_name_or_path", default="~/.comet-data/models/atomic_pretrained_model",
+    parser.add_argument("--in_file", type=str, help="CSV ATOMIC file",
+                        default=os.path.join(DATA_DIR, "v4_atomic_dev.csv"))
+    parser.add_argument("--model_name_or_path",
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
                         help="Pre-trained COMET model")
     parser.add_argument("--num_samples", default=10, type=int, required=False, help="how many texts to generate")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")

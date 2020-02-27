@@ -1,3 +1,4 @@
+import os
 import logging
 import argparse
 
@@ -8,6 +9,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
+
 
 def main():
     """
@@ -15,11 +18,10 @@ def main():
     """
     parser = argparse.ArgumentParser()
 
-    # Required
-    parser.add_argument("--model_name_or_path", default="~/.comet-data/models/atomic_pretrained_model",
+    parser.add_argument("--model_name_or_path",
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
                         help="Pre-trained COMET model")
 
-    # Optional
     parser.add_argument("--sampling_algorithm", type=str, default="topk-1")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")
     parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")

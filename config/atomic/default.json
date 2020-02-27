@@ -1,5 +1,4 @@
 {
-    
     "dataset": "atomic",
     "categories": ["oReact", "oEffect", "oWant", "xAttr", "xEffect", "xIntent", "xNeed", "xReact", "xWant"],
     "eval_categories": ["oReact", "oEffect", "oWant", "xAttr", "xEffect", "xIntent", "xNeed", "xReact", "xWant"],

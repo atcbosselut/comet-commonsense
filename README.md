@@ -8,24 +8,37 @@ For the original version see: [atcbosselut/comet-commonsense](https://github.com
 
 ### Installation
 
-Install the repository:
+Install the repository. This will also download the ATOMIC dataset and the pre-trained COMET model:
+
 
 ```
 pip install git+https://github.com/vered1986/comet-commonsense.git
 ```
 
-Download the ATOMIC dataset and the pre-trained COMET model:
+
+### Using a pre-trained model
 
 ```
-bash setup/download.sh
+>>> from comet.comet_model import PretrainedCometModel
+
+>>> comet_model = PretrainedCometModel(device=1)
+
+>>> comet_model.predict("PersonX asked PersonY for an example for the demo", "xWant")
+['to have y respond to personx']
+
+>>> comet_model.predict("PersonX just woke up", "xEffect")
+['gets out of bed']
 ```
+
+You can also specify a different model path `model_name_or_path` when you create `PretrainedCometModel`.
+
 
 ### Training
 
-Run `python -m src.train` with the following arguments:
+Run `python -m comet.train` with the following arguments:
 
 ```
-usage: train.py [-h] --train_file TRAIN_FILE --out_dir OUT_DIR
+usage: train.py [-h] [--train_file TRAIN_FILE] --out_dir OUT_DIR
                 [--adam_epsilon ADAM_EPSILON] [--device DEVICE] [--do_eval]
                 [--do_lower_case] [--do_train]
                 [--eval_batch_size EVAL_BATCH_SIZE]
@@ -101,10 +114,10 @@ The training script can be used to evaluate with perplexity.
 Use the `--do_eval` flag and set `--eval_data_file` to the validation set. 
 
 
-To get BLEU scores, run `python -m src.evaluate` with the following arguments:
+To get BLEU scores, run `python -m comet.evaluate` with the following arguments:
 
 ```
-usage: evaluate.py [-h] --in_file IN_FILE
+usage: evaluate.py [-h] [--in_file IN_FILE]
                    [--model_name_or_path MODEL_NAME_OR_PATH]
                    [--num_samples NUM_SAMPLES] [--device DEVICE]
                    [--max_length MAX_LENGTH] [--do_lower_case]
@@ -113,34 +126,48 @@ optional arguments:
   -h, --help            show this help message and exit
   --in_file IN_FILE     CSV ATOMIC file
   --model_name_or_path MODEL_NAME_OR_PATH
-                        LM checkpoint.
+                        Pre-trained COMET model
   --num_samples NUM_SAMPLES
                         how many texts to generate
+  --device DEVICE       GPU number or 'cpu'.
+```
+
+### Generation
+
+To run an interactive script for single predictions: `python -m comet.interactive`
+
+```
+usage: interactive.py [-h] [--model_name_or_path MODEL_NAME_OR_PATH]
+                      [--sampling_algorithm SAMPLING_ALGORITHM]
+                      [--device DEVICE] [--max_length MAX_LENGTH]
+                      [--do_lower_case]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_name_or_path MODEL_NAME_OR_PATH
+                        Pre-trained COMET model
+  --sampling_algorithm SAMPLING_ALGORITHM
   --device DEVICE       GPU number or 'cpu'.
   --max_length MAX_LENGTH
                         Maximum text length
   --do_lower_case       Set this flag if you are using an uncased model.
 ```
 
-### Generation
-
-To generate predictions for a dataset, run `python -m src.predict` with the following arguments:
+To generate predictions for a dataset, run `python -m comet.predict` with the following arguments:
 
 ```
-usage: predict.py [-h] --in_file IN_FILE --out_file OUT_FILE
+usage: predict.py [-h] --out_file OUT_FILE [--in_file IN_FILE]
                   [--model_name_or_path MODEL_NAME_OR_PATH]
-                  [--model_type MODEL_TYPE] [--max_length MAX_LENGTH] [--k K]
-                  [--p P] [--num_beams NUM_BEAMS] [--num_samples NUM_SAMPLES]
+                  [--max_length MAX_LENGTH] [--k K] [--p P]
+                  [--num_beams NUM_BEAMS] [--num_samples NUM_SAMPLES]
                   [--device DEVICE] [--do_lower_case]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --in_file IN_FILE     CSV ATOMIC file
   --out_file OUT_FILE   jsonl file with input+output events.
+  --in_file IN_FILE     CSV ATOMIC file
   --model_name_or_path MODEL_NAME_OR_PATH
-                        LM checkpoint for initialization.
-  --model_type MODEL_TYPE
-                        The LM architecture to be fine-tuned.
+                        Pre-trained COMET model
   --max_length MAX_LENGTH
                         Maximum text length
   --k K                 k for top k sampling

@@ -28,7 +28,7 @@ class PretrainedCometModel(object):
         self.device = torch.device(f"cuda:{device}" if torch.cuda.is_available() and device != "cpu" else "cpu")
         logger.debug(f"Initializing {device}")
 
-        self.tokenizer, self.model = init_model(model_name_or_path, device=device, do_lower_case=do_lower_case)
+        self.tokenizer, self.model = init_model(model_name_or_path, device=self.device, do_lower_case=do_lower_case)
         self.categories = set(get_atomic_categories())
 
     def predict(self,
@@ -45,7 +45,7 @@ class PretrainedCometModel(object):
         if category not in self.categories:
             raise ValueError(f"Category {category} not supported. Select one of {self.categories}")
 
-        prefix = f"{input_event} <{category}>"
+        prefix = f"{input_event} <{category.lower()}>"
         return generate_ending(self.model, self.tokenizer, prefix, device=self.device,
                                num_samples=num_samples, num_beams=num_beams, p=p, k=k, temperature=temperature,
                                length=length, return_tokenized=return_tokenized)

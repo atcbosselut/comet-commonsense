@@ -1,10 +1,6 @@
-import os
 import json
 import logging
 import pandas as pd
-import comet.config as cfg
-
-from distutils.dir_util import mkpath
 
 
 logging.basicConfig(
@@ -13,18 +9,14 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-CONFIG_DIR = os.path.expanduser("~/.comet-data/config/")
+CATEGORIES = ["oReact", "oEffect", "oWant", "xAttr", "xEffect", "xIntent", "xNeed", "xReact", "xWant"],
 
 
-def get_atomic_categories(eval_mode=True):
+def get_atomic_categories():
     """
     Return the names of ATOMIC categories
     """
-    generate_config_files("atomic", eval_mode=eval_mode)
-    config_file = os.path.join(CONFIG_DIR, "atomic/config_0.json")
-    config = cfg.read_config(cfg.load_config(config_file))
-    opt, _ = cfg.get_parameters(config)
-    return opt.data.categories
+    return CATEGORIES
 
 
 def load_atomic_data(in_file, categories):
@@ -43,45 +35,4 @@ def load_atomic_data(in_file, categories):
         for _, row in df.iterrows()}
 
     return examples
-
-
-def generate_config_files(type_, name="base", eval_mode=False):
-    """
-    Generate a configuration file for ATOMIC (copied from the original code).
-    :return:
-    """
-    key = "0"
-    with open(os.path.join(CONFIG_DIR, "default.json").format(type_), "r") as f:
-        base_config = json.load(f)
-    with open(os.path.join(CONFIG_DIR, "{}/default.json").format(type_), "r") as f:
-        base_config_2 = json.load(f)
-    if eval_mode:
-        with open(os.path.join(CONFIG_DIR, "{}/eval_changes.json").format(type_), "r") as f:
-            changes_by_machine = json.load(f)
-    else:
-        with open(os.path.join(CONFIG_DIR, "{}/changes.json").format(type_), "r") as f:
-            changes_by_machine = json.load(f)
-
-    base_config.update(base_config_2)
-
-    if name in changes_by_machine:
-        changes = changes_by_machine[name]
-    else:
-        changes = changes_by_machine["base"]
-
-    replace_params(base_config, changes[key])
-
-    mkpath(os.path.join(CONFIG_DIR, type_))
-
-    with open(os.path.join(CONFIG_DIR, "{}/config_{}.json").format(type_, key), "w") as f:
-        json.dump(base_config, f, indent=4)
-
-
-def replace_params(base_config, changes):
-    for param, value in changes.items():
-        if isinstance(value, dict) and param in base_config:
-            replace_params(base_config[param], changes[param])
-        else:
-            base_config[param] = value
-
 

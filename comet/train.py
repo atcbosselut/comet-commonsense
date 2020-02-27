@@ -13,14 +13,14 @@ import pickle
 import logging
 import argparse
 import numpy as np
-import comet.config as cfg
 
 from tqdm import tqdm, trange
 from torch.nn import CrossEntropyLoss
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
-from comet.atomic import load_atomic_data, generate_config_files
+from comet.comet_model import init_model
+from comet.atomic import load_atomic_data, get_atomic_categories
 
 
 try:
@@ -32,6 +32,8 @@ except ImportError:
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
                     datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+DATA_DIR = os.path.expanduser("~/.comet-data/data/atomic/")
 
 
 class TextDataset(Dataset):
@@ -71,8 +73,8 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Required parameters
-    parser.add_argument("--train_file", default="v4_atomic_train.csv", type=str,
-                        required=True, help="The input training CSV file.")
+    parser.add_argument("--train_file", type=str, help="The input training CSV file.",
+                        default=os.path.join(DATA_DIR, "v4_atomic_trn.csv"))
     parser.add_argument("--out_dir", default=None, type=str, required=True, help="Out directory for checkpoints.")
 
     # Other parameters
@@ -82,7 +84,8 @@ def main():
     parser.add_argument("--do_lower_case", action="store_true", help="Set this flag if you are using an uncased model.")
     parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
     parser.add_argument("--eval_batch_size", default=64, type=int, help="Batch size for evaluation.")
-    parser.add_argument("--eval_data_file", default=None, type=str, help="Validation file")
+    parser.add_argument("--eval_data_file", default=os.path.join(DATA_DIR, "v4_atomic_dev.csv"),
+                        type=str, help="Validation file")
     parser.add_argument("--eval_during_train", action="store_true", help="Evaluate at each train logging step.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1, help="Steps before backward pass.")
     parser.add_argument("--learning_rate", default=5e-6, type=float, help="The initial learning rate for Adam.")
@@ -124,19 +127,9 @@ def main():
     model.to(args.device)
     logger.info(f"Training/evaluation parameters {args}")
 
-    # Generate configuration files depending on experiment being run
-    generate_config_files("atomic")
-
-    # Loads the correct configuration file
-    config_file = "config/atomic/config_0.json"
-
-    # Read config file to option
-    config = cfg.read_config(cfg.load_config(config_file))
-    opt, meta = cfg.get_parameters(config)
-
     # Add special tokens (if loading a model before fine-tuning)
     if len(tokenizer.added_tokens_encoder) == 0:
-        tokenizer.add_tokens([f"<{cat}>" for cat in opt.data.categories] +
+        tokenizer.add_tokens([f"<{cat}>" for cat in get_atomic_categories()] +
                              ["<blank>", "<eos>", "personx", "persony"])
         model.resize_token_embeddings(len(tokenizer))
 
@@ -145,8 +138,8 @@ def main():
 
     # Training
     if args.do_train:
-        train_dataset = load_and_cache_examples(args.train_file, args, tokenizer, opt.data.categories)
-        global_step, tr_loss = train(args, opt.data.categories, train_dataset, model, tokenizer)
+        train_dataset = load_and_cache_examples(args.train_file, args, tokenizer, get_atomic_categories())
+        global_step, tr_loss = train(args, get_atomic_categories(), train_dataset, model, tokenizer)
         logger.info(f" global_step = {global_step}, average loss = {tr_loss}")
 
         # Create output directory if needed
@@ -177,7 +170,7 @@ def main():
         prefix = checkpoint.split("/")[-1] if checkpoint.find("checkpoint") != -1 else ""
         _, model = init_model(checkpoint, device=args.device)
         model.to(args.device)
-        result = evaluate(args, opt.data.categories, model, tokenizer, prefix=prefix)
+        result = evaluate(args, get_atomic_categories(), model, tokenizer, prefix=prefix)
         results.update(result)
 
     return results

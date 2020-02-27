@@ -19,7 +19,3 @@ echo "unzip atomic_pretrained_model.zip -d ~/.comet-data/models/"
 unzip atomic_pretrained_model.zip -d ~/.comet-data/models/;
 echo "rm atomic_pretrained_model.zip"
 rm atomic_pretrained_model.zip;
-
-# Configuration
-echo "cp -r ../config ~/.comet-data/"
-cp -r ../config ~/.comet-data/;

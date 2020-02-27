@@ -1,3 +1,4 @@
+import os
 import json
 import tqdm
 import logging
@@ -11,6 +12,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
+DATA_DIR = os.path.expanduser("~/.comet-data/data/atomic/")
+
 
 def main():
     """
@@ -19,12 +23,15 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Required
-    parser.add_argument("--in_file", default=None, type=str, required=True, help="CSV ATOMIC file")
     parser.add_argument("--out_file", default=None, type=str, required=True, help="jsonl file with input+output events.")
-    parser.add_argument("--model_name_or_path", default="~/.comet-data/models/atomic_pretrained_model",
-                        help="Pre-trained COMET model")
 
     # Optional
+    parser.add_argument("--in_file", type=str, help="CSV ATOMIC file",
+                        default=os.path.join(DATA_DIR, "v4_atomic_dev.csv"))
+    parser.add_argument("--model_name_or_path",
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
+                        help="Pre-trained COMET model")
+
     parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")
     parser.add_argument("--k", default=0, type=int, required=False, help="k for top k sampling")
     parser.add_argument("--p", default=0, type=float, required=False, help="p for nucleus sampling")
