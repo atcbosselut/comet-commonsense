@@ -1,3 +1,4 @@
+import os
 import subprocess
 import setuptools
 
@@ -11,11 +12,13 @@ class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         install.run(self)
-        script = "../setup/download.sh"
-        proc = subprocess.Popen(["bash", script], stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
-        print(out)
-        print(err)
+        self.execute(_post_install, (self.install_lib,),
+                     msg="Running post install task")
+
+
+def _post_install(dir):
+    subprocess.call(["/bin/bash", "-c", "../setup/download.sh"],
+                    cwd=os.path.join(dir, "comet-commonsense"))
 
 
 setuptools.setup(
