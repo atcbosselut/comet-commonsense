@@ -24,7 +24,7 @@ class PostInstallCommand(install):
 
 
 def _post_install(dir):
-    subprocess.call(["/bin/bash", "-c", "download.sh"], cwd=os.path.join(BUILD_DIR, "setup"))
+    subprocess.call(["/bin/bash", "-c", "download.sh"], cwd=os.path.join(BUILD_DIR, os.pardir, "setup"))
 
 
 setuptools.setup(
