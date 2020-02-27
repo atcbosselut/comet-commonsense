@@ -1,4 +1,3 @@
-import os
 import subprocess
 import setuptools
 
@@ -12,7 +11,7 @@ class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         install.run(self)
-        script = os.path.join(os.getcwd(), "../setup/download.sh")
+        script = "../setup/download.sh"
         proc = subprocess.Popen(["bash", script], stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
         print(out)
