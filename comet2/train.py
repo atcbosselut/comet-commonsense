@@ -371,7 +371,7 @@ def train(args, categories, train_dataset, model, tokenizer):
     return global_step, tr_loss / global_step
 
 
-def get_loss(args, batch, model):
+def get_loss(args, batch, model, compute_micro=False):
     token_ids = batch["examples"].to(args.device)
     shift_labels = token_ids[..., 1:].contiguous().view(-1)
 
@@ -389,8 +389,15 @@ def get_loss(args, batch, model):
     loss_mask = torch.mul(shift_input_mask, (shift_labels > 0).long())
 
     loss = torch.mul(loss_mask, loss)
-    loss = loss.sum() / loss_mask.nonzero().size(0)
-    return loss
+    per_token_loss = loss.sum() / loss_mask.nonzero().size(0)
+
+    # Also return the summed loss and number of tokens - for micro perplexity
+    if compute_micro:
+        outputs = (per_token_loss, loss, loss_mask.nonzero().size(0))
+    else:
+        outputs = per_token_loss
+
+    return outputs
 
 
 def evaluate(args, categories, model, tokenizer, prefix=""):
@@ -409,20 +416,22 @@ def evaluate(args, categories, model, tokenizer, prefix=""):
     logger.info(f"***** Running evaluation {prefix} *****")
     logger.info(f"  Num examples = {len(eval_dataset)}")
     logger.info(f"  Batch size = {args.eval_batch_size}")
-    eval_loss = 0.0
-    nb_eval_steps = 0
+    micro_loss = macro_loss = 0.0
+    num_tokens = num_batches = 0
     model.eval()
 
     for batch in tqdm(eval_dataloader, desc="Evaluating"):
         with torch.no_grad():
-            lm_loss = get_loss(args, batch, model)
-            eval_loss += lm_loss.mean().item()
-        nb_eval_steps += 1
+            per_token_loss, batch_loss, curr_num_tokens = get_loss(args, batch, model, compute_micro=True)
+            macro_loss += per_token_loss.mean().item()
+            micro_loss += batch_loss.sum().item()
+            num_tokens += curr_num_tokens
+        num_batches += 1
 
-    eval_loss = eval_loss / nb_eval_steps
-    perplexity = torch.exp(torch.tensor(eval_loss))
+    macro_perplexity = torch.exp(torch.tensor(macro_loss / num_batches))
+    micro_perplexity = torch.exp(torch.tensor(micro_loss / num_tokens))
 
-    result = {"perplexity": perplexity}
+    result = {"macro_perplexity": macro_perplexity, "micro_perplexity": micro_perplexity}
 
     output_eval_file = os.path.join(eval_out_dir, prefix, "eval_results.txt")
     with open(output_eval_file, "w") as writer:
