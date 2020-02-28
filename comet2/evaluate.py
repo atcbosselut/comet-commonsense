@@ -64,16 +64,18 @@ def main():
         for input_event, refs in tqdm.tqdm(curr_examples.items()):
 
             # Skip empty references
-            if len(refs) == 0 or sum([i == ["none"] for i in refs]) / len(refs) > 1/3:
-                continue
-
             refs = [comet_model.tokenizer.tokenize(ref) for ref in refs]
+            refs = [t[:t.index("<eos>")] if "<eos>" in t else t for t in refs]
+            refs = [[w for w in t if w != "<unk>"] for t in refs]
+            refs = [tuple([w.replace("</w>", "") for w in ref]) for ref in refs]
+
+            if len(refs) == 0 or sum([i == [("none",)] for i in refs]) / len(refs) > 1/3:
+                continue
 
             sys_outputs = comet_model.predict(
                 input_event, category, length=args.max_length, return_tokenized=True, num_beams=args.num_beams)
 
-            bleu_scores = [bleu(refs, out, weights=weights, smoothing_function=smoothing) for out in sys_outputs]
-
+            bleu_scores = [100.0 * bleu(refs, out, weights=weights, smoothing_function=smoothing) for out in sys_outputs]
             total_bl[category] += sum(bleu_scores)
             total_count[category] += len(bleu_scores)
 

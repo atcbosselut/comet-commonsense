@@ -129,25 +129,16 @@ class PretrainedCometModel(object):
             beam_seqs = beam_seqs[:, len(context_tokens):]
             
             if return_tokenized:
-                seqs = []
-                for beam in beam_seqs:
-                    text = self.tokenizer.convert_ids_to_tokens(beam)
-
-                    if "<eos>" in text:
-                        text = text[:text.index("<eos>")]
-
-                    if "<unk>" in text:
-                        text.remove("<unk>")
-
-                    if len(text) > 0:
-                        seqs.append(tuple(text))
-
-                beam_seqs = seqs
+                texts = [self.tokenizer.convert_ids_to_tokens(t) for t in beam_seqs]
+                texts = [t[:t.index("<eos>")] if "<eos>" in t else t for t in texts]
+                texts = [[w for w in t if w != "<unk>"] for t in texts]
+                texts = [[w.replace("</w>", "") for w in t] for t in texts]
+                beam_seqs = [tuple(t) for t in texts if len(t) > 0]
             else:
                 beam_seqs = [
                     re.sub(" +", " ", self.tokenizer.decode(
                         seq, clean_up_tokenization_spaces=True).replace(
-                        "<eos>", "").replace("<unk>", "").replace("!", "").strip())
+                        "<eos>", "").replace("<unk>", "").replace("!", "").replace("<w/>", "").strip())
                     for seq in beam_seqs]
 
             return beam_seqs
@@ -181,24 +172,15 @@ class PretrainedCometModel(object):
         outputs = outputs[:, len(context_tokens):]
 
         if return_tokenized:
-            new_outputs = set()
-            for text in outputs:
-                text = self.tokenizer.convert_ids_to_tokens(text)
-
-                if "<eos>" in text:
-                    text = text[:text.index("<eos>")]
-
-                if "<unk>" in text:
-                    text.remove("<unk>")
-
-                if len(text) > 0:
-                    new_outputs.add(tuple(text))
-
-            outputs = new_outputs
+            texts = [self.tokenizer.convert_ids_to_tokens(t) for t in outputs]
+            texts = [t[:t.index("<eos>")] if "<eos>" in t else t for t in texts]
+            texts = [[w for w in t if w != "<unk>"] for t in texts]
+            texts = [[w.replace("</w>", "") for w in t] for t in texts]
+            outputs = {tuple(t) for t in texts if len(t) > 0}
         else:
             outputs = set([re.sub(" +", " ",
                 self.tokenizer.decode(outputs[i], clean_up_tokenization_spaces=True).replace(
-                "<eos>", "").replace("<unk>", "").replace("!", "").strip())
+                "<eos>", "").replace("<unk>", "").replace("!", "").replace("<w/>", "").strip())
                          for i in range(num_samples)])
 
             outputs = [text for text in outputs if len(text) > 0]
