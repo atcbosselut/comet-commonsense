@@ -8,7 +8,7 @@ from setuptools.command.develop import develop
 
 # Are we building from the repository or from a source distribution?
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-SRC_DIR = os.path.join(ROOT_DIR, 'comet2')
+SRC_DIR = os.path.join(ROOT_DIR, 'comet')
 BUILD_DIR = SRC_DIR if os.path.exists(SRC_DIR) else os.path.join(ROOT_DIR, '../..')
 
 
@@ -37,7 +37,7 @@ def _post_install():
 
 
 setuptools.setup(
-    name="comet2",
+    name="comet",
     version="2.0",
     author="This version by Vered Shwartz. Original version by Antoine Bosselut.",
     description="COMET: Commonsense Transformers for Automatic Knowledge Graph Construction",

@@ -6,9 +6,9 @@ import torch.nn.functional as F
 
 from transformers import AutoModelWithLMHead, AutoTokenizer
 
-from comet2.atomic import get_atomic_categories
+from comet.atomic import get_atomic_categories
 
-MODEL_DIR = os.path.expanduser("~/.comet2-data/models/")
+MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
 
 
 class PretrainedCometModel(object):

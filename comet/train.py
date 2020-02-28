@@ -19,8 +19,8 @@ from torch.nn import CrossEntropyLoss
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
 
-from comet2.comet_model import init_model
-from comet2.atomic import load_atomic_data, get_atomic_categories
+from comet.comet_model import init_model
+from comet.atomic import load_atomic_data, get_atomic_categories
 
 
 try:
@@ -33,7 +33,7 @@ logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s
                     datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DATA_DIR = os.path.expanduser("~/.comet2-data/data/atomic/")
+DATA_DIR = os.path.expanduser("~/.comet-data/data/atomic/")
 
 
 class TextDataset(Dataset):
