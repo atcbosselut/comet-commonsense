@@ -19,7 +19,7 @@ pip install git+https://github.com/vered1986/comet-commonsense.git
 ### Using a pre-trained model
 
 ```
->>> from comet.comet_model import PretrainedCometModel
+>>> from comet2.comet_model import PretrainedCometModel
 
 >>> comet_model = PretrainedCometModel(device=1)
 
@@ -35,7 +35,7 @@ You can also specify a different model path `model_name_or_path` when you create
 
 ### Training
 
-Run `python -m comet.train` with the following arguments:
+Run `python -m comet2.train` with the following arguments:
 
 ```
 usage: train.py [-h] [--train_file TRAIN_FILE] --out_dir OUT_DIR
@@ -114,7 +114,7 @@ The training script can be used to evaluate with perplexity.
 Use the `--do_eval` flag and set `--eval_data_file` to the validation set. 
 
 
-To get BLEU scores, run `python -m comet.evaluate` with the following arguments:
+To get BLEU scores, run `python -m comet2.evaluate` with the following arguments:
 
 ```
 usage: evaluate.py [-h] [--in_file IN_FILE]
@@ -134,7 +134,7 @@ optional arguments:
 
 ### Generation
 
-To run an interactive script for single predictions: `python -m comet.interactive`
+To run an interactive script for single predictions: `python -m comet2.interactive`
 
 ```
 usage: interactive.py [-h] [--model_name_or_path MODEL_NAME_OR_PATH]
@@ -153,7 +153,7 @@ optional arguments:
   --do_lower_case       Set this flag if you are using an uncased model.
 ```
 
-To generate predictions for a dataset, run `python -m comet.predict` with the following arguments:
+To generate predictions for a dataset, run `python -m comet2.predict` with the following arguments:
 
 ```
 usage: predict.py [-h] --out_file OUT_FILE [--in_file IN_FILE]

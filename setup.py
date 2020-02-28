@@ -8,7 +8,7 @@ from setuptools.command.develop import develop
 
 # Are we building from the repository or from a source distribution?
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-SRC_DIR = os.path.join(ROOT_DIR, 'comet')
+SRC_DIR = os.path.join(ROOT_DIR, 'comet2')
 BUILD_DIR = SRC_DIR if os.path.exists(SRC_DIR) else os.path.join(ROOT_DIR, '../..')
 
 
@@ -24,7 +24,7 @@ class PostInstallCommand(install):
 
 
 class PostDevelopCommand(develop):
-    """Post-installation for installation mode."""
+    """Post-installation for development mode."""
     def run(self):
         develop.run(self)
         self.execute(_post_install, (), msg="Running post install task")
