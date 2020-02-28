@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
 
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
-    user_options = [
+    user_options = install.user_options + [
         ('data_dir=', DATA_DIR, f'Specify the data directory (default {DATA_DIR})'),
     ]
 
@@ -30,7 +30,7 @@ class PostInstallCommand(install):
 
 class PostDevelopCommand(develop):
     """Post-installation for development mode."""
-    user_options = [
+    user_options = develop.user_options + [
         ('data_dir=', DATA_DIR, f'Specify the data directory (default {DATA_DIR})'),
     ]
 
