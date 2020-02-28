@@ -19,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model_name_or_path",
-                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model_openai-gpt"),
                         help="Pre-trained COMET model")
 
     parser.add_argument("--sampling_algorithm", type=str, default="topk-1")

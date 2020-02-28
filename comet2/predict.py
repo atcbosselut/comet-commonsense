@@ -29,7 +29,7 @@ def main():
     parser.add_argument("--in_file", type=str, help="CSV ATOMIC file",
                         default=os.path.join(DATA_DIR, "v4_atomic_dev.csv"))
     parser.add_argument("--model_name_or_path",
-                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model_openai-gpt"),
                         help="Pre-trained COMET model")
 
     parser.add_argument("--max_length", default=70, type=int, required=False, help="Maximum text length")

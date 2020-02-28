@@ -3,8 +3,9 @@ import tqdm
 import logging
 import argparse
 
+from nltk import bleu
 from collections import defaultdict
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from nltk.translate.bleu_score import SmoothingFunction
 
 from comet2.atomic import load_atomic_data
 from comet2.comet_model import PretrainedCometModel
@@ -28,9 +29,10 @@ def main():
     parser.add_argument("--in_file", type=str, help="CSV ATOMIC file",
                         default=os.path.join(DATA_DIR, "v4_atomic_dev.csv"))
     parser.add_argument("--model_name_or_path",
-                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model"),
+                        default=os.path.join(MODEL_DIR, "atomic_pretrained_model_openai-gpt"),
                         help="Pre-trained COMET model")
-    parser.add_argument("--num_samples", default=10, type=int, required=False, help="how many texts to generate")
+    parser.add_argument("--n", type=int, default=2)
+    parser.add_argument("--num_beams", default=5, type=int, required=False, help="how many texts to generate")
     parser.add_argument("--device", default="cpu", type=str, help="GPU number or 'cpu'.")
     parser.add_argument("--max_length", default=25, type=int, required=False, help="Maximum text length")
     parser.add_argument("--do_lower_case", action="store_true", help="Set this flag if you are using an uncased model.")
@@ -39,48 +41,44 @@ def main():
 
     comet_model = PretrainedCometModel(args.model_name_or_path, device=args.device, do_lower_case=args.do_lower_case)
 
+    smoothing = SmoothingFunction().method1
+    weights = [1 / args.n] * args.n
+
     logger.info(f"Loading ATOMIC examples from {args.in_file}")
     examples = load_atomic_data(args.in_file, comet_model.categories)
 
     examples_by_category = defaultdict(lambda: defaultdict(list))
 
+    # Group by category
     for e1, curr_relations in examples.items():
         for cat, e2s in curr_relations.items():
-            examples_by_category[cat][e1.replace("<blank>", "___")] = [f"{e2} <eos>" for e2 in e2s]
+            examples_by_category[cat][e1.replace("<blank>", "___")] = e2s
 
-    for generation_arg in [{"k": 1}, {"k": 5}, {"k": 10},
-                           {"num_beams": 10, "k": 10},
-                           {"num_beams": 5, "k": 5},
-                           {"num_beams": 2, "k": 2}]:
-        logger.info(generation_arg)
+    total_bl = {}
+    total_count = {}
 
-        total_bl = {}
-        total_count = {}
+    for category, curr_examples in examples_by_category.items():
+        total_bl[category] = 0
+        total_count[category] = 0
 
-        for category, curr_examples in examples_by_category.items():
-            total_bl[category] = 0
-            total_count[category] = 0
+        for input_event, refs in tqdm.tqdm(curr_examples.items()):
 
-            for input_event, list_of_refs in tqdm.tqdm(curr_examples.items()):
-                list_of_refs = [ref for ref in list_of_refs if ref != "none"]
-                if len(list_of_refs) == 0:
-                    continue
+            # Skip empty references
+            if len(refs) == 0 or sum([i == ["none"] for i in refs]) / len(refs) > 1/3:
+                continue
 
-                list_of_refs = [comet_model.tokenizer.tokenize(ref) for ref in list_of_refs]
+            refs = [comet_model.tokenizer.tokenize(ref) for ref in refs]
 
-                system_outputs = comet_model.predict(
-                    input_event, category, length=args.max_length, num_samples=args.num_samples,
-                    return_tokenized=True, **generation_arg)
+            sys_outputs = comet_model.predict(
+                input_event, category, length=args.max_length, return_tokenized=True, num_beams=args.num_beams)
 
-                bleu_scores = [sentence_bleu(
-                    list_of_refs, output, weights=(0.5, 0.5, 0, 0), smoothing_function=SmoothingFunction().method1)
-                    for output in system_outputs]
+            bleu_scores = [bleu(refs, out, weights=weights, smoothing_function=smoothing) for out in sys_outputs]
 
-                total_bl[category] += sum(bleu_scores)
-                total_count[category] += len(bleu_scores)
+            total_bl[category] += sum(bleu_scores)
+            total_count[category] += len(bleu_scores)
 
-            if total_count[category] > 0:
-                logger.info(f"{category}: \t {total_bl[category] / total_count[category]}")
+        if total_count[category] > 0:
+            logger.info(f"{category}: \t {total_bl[category] / total_count[category]}")
 
     if len(total_bl) > 0:
         total = sum([total_bl[cat] / total_count[cat] for cat in total_bl]) / len(total_bl)
