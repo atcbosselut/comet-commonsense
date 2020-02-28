@@ -10,8 +10,8 @@ from setuptools.command.develop import develop
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 SRC_DIR = os.path.join(ROOT_DIR, 'comet2')
 BUILD_DIR = SRC_DIR if os.path.exists(SRC_DIR) else os.path.join(ROOT_DIR, '../..')
-DATA_DIR = os.path.expanduser("~/.comet-data")
 
+DATA_DIR = os.environ.get('COMET_DATA_DIR', os.path.expanduser("~/.comet-data"))
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -19,24 +19,16 @@ with open("README.md", "r") as fh:
 
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
-    user_options = install.user_options + [
-        ('data_dir=', DATA_DIR, f'Specify the data directory (default {DATA_DIR})'),
-    ]
-
     def run(self):
         install.run(self)
-        self.execute(_post_install, (self.data_dir,), msg="Running post install task")
+        self.execute(_post_install, (DATA_DIR,), msg="Running post install task")
 
 
 class PostDevelopCommand(develop):
     """Post-installation for development mode."""
-    user_options = develop.user_options + [
-        ('data_dir=', DATA_DIR, f'Specify the data directory (default {DATA_DIR})'),
-    ]
-
     def run(self):
         develop.run(self)
-        self.execute(_post_install, (self.data_dir,), msg="Running post install task")
+        self.execute(_post_install, (DATA_DIR,), msg="Running post install task")
 
 
 def _post_install(data_dir):
