@@ -2,14 +2,14 @@ import os
 import logging
 import argparse
 
-from comet.comet_model import PretrainedCometModel
+from comet2.comet_model import PretrainedCometModel
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
+MODEL_DIR = os.path.expanduser("~/.comet2-data/models/")
 
 
 def main():
