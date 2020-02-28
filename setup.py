@@ -3,6 +3,8 @@ import subprocess
 import setuptools
 
 from setuptools.command.install import install
+from setuptools.command.develop import develop
+
 
 # Are we building from the repository or from a source distribution?
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -17,7 +19,13 @@ with open("README.md", "r") as fh:
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
-        print(BUILD_DIR)
+        install.run(self)
+        self.execute(_post_install, (), msg="Running post install task")
+
+
+class PostDevelopCommand(develop):
+    """Post-installation for installation mode."""
+    def run(self):
         install.run(self)
         self.execute(_post_install, (), msg="Running post install task")
 
@@ -54,5 +62,5 @@ setuptools.setup(
         "gdown"
     ],
     python_requires='>=3.6',
-    cmdclass={'install': PostInstallCommand, 'develop': PostInstallCommand}
+    cmdclass={'install': PostInstallCommand, 'develop': PostDevelopCommand}
 )
