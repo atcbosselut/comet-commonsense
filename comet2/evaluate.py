@@ -8,7 +8,7 @@ from collections import defaultdict
 from nltk.translate.bleu_score import SmoothingFunction
 
 from comet2.atomic import load_atomic_data
-from comet2.comet_model import PretrainedCometModel
+from comet2.comet_model import PretrainedCometModel, BASE_DIR, MODEL_DIR
 
 logging.basicConfig(
     format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -16,8 +16,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = "/usr/local/.comet-data/models/"
-DATA_DIR = "/usr/local/.comet-data/data/atomic/"
+DATA_DIR = os.path.join(BASE_DIR, "models")
 
 
 def main():

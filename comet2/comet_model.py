@@ -8,7 +8,8 @@ from transformers import AutoModelWithLMHead, AutoTokenizer
 
 from comet2.atomic import get_atomic_categories
 
-MODEL_DIR = "/usr/local/.comet-data/models/"
+BASE_DIR = os.path.expanduser("~/.comet-data/")
+MODEL_DIR = os.path.join(BASE_DIR, "models")
 
 
 class PretrainedCometModel(object):
