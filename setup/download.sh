@@ -15,11 +15,11 @@ rm atomic_data.tgz;
 # Get Pre-trained COMET model
 echo "mkdir -p ${DATA_DIR}/models/"
 mkdir -p ${DATA_DIR}/models/;
-echo "gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh"
-gdown https://drive.google.com/uc?id=1aIIoTz9m28yyW1ygg6OG-JkAVLUyuIRh;
+echo "gdown https://drive.google.com/uc?id=1z2JkT_fXtmxsQcRmis8KSD4r9YPfrm1A"
+gdown https://drive.google.com/uc?id=1z2JkT_fXtmxsQcRmis8KSD4r9YPfrm1A;
 echo "unzip atomic_pretrained_model.zip -d ${DATA_DIR}/models/"
 unzip atomic_pretrained_model.zip -d ${DATA_DIR}/models/;
-echo "rm atomic_pretrained_model.zip"
-rm atomic_pretrained_model.zip;
-echo "mv ${DATA_DIR}/models/atomic_pretrained_model ${DATA_DIR}/models/atomic_pretrained_model_openai-gpt"
-mv ${DATA_DIR}/models/atomic_pretrained_model ${DATA_DIR}/models/atomic_pretrained_model_openai-gpt;
+echo "rm atomic_pretrained_model_openai-gpt.zip"
+rm atomic_pretrained_model_openai-gpt.zip;
+echo "mv ${DATA_DIR}/models/atomic_pretrained_model_openai-gpt ${DATA_DIR}/models/"
+mv ${DATA_DIR}/models/atomic_pretrained_model_openai-gpt ${DATA_DIR}/models/;

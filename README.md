@@ -18,6 +18,8 @@ pip install git+https://github.com/vered1986/comet-commonsense.git
 
 ### Using a pre-trained model
 
+The installation comes with a pre-trained model based on GPT. 
+
 ```
 >>> from comet2.comet_model import PretrainedCometModel
 
@@ -29,6 +31,11 @@ pip install git+https://github.com/vered1986/comet-commonsense.git
 >>> comet_model.predict("PersonX just woke up", "xEffect")
 ['gets out of bed']
 ```
+
+The performance of the pre-trained model is:
+
+* **Micro perplexity**: 11.87 (original model: 11.14)
+* **BLEU-2**: 14.43 (original model: 15.10)
 
 You can also specify a different model path `model_name_or_path` when you create `PretrainedCometModel`.
 
