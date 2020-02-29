@@ -32,6 +32,7 @@ class PostDevelopCommand(develop):
 
 
 def _post_install(data_dir):
+    print(f"Downloading data into {DATA_DIR}")
     script = os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")
     subprocess.call(["chmod", "+x", script])
     subprocess.call(["/bin/bash", "-c", script, data_dir])
