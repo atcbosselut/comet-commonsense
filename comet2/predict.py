@@ -12,8 +12,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = os.path.expanduser("~/.comet-data/models/")
-DATA_DIR = os.path.expanduser("~/.comet-data/data/atomic/")
+MODEL_DIR = "/usr/local/.comet-data/models/"
+DATA_DIR = "/usr/local/.comet-data/data/atomic/"
 
 
 def main():
