@@ -11,8 +11,6 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 SRC_DIR = os.path.join(ROOT_DIR, 'comet2')
 BUILD_DIR = SRC_DIR if os.path.exists(SRC_DIR) else os.path.join(ROOT_DIR, '../..')
 
-DATA_DIR = os.environ.get('COMET_DATA_DIR', os.path.expanduser("~/.comet-data"))
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -21,18 +19,25 @@ class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         install.run(self)
-        self.execute(_post_install, (DATA_DIR,), msg="Running post install task")
+        self.execute(_post_install, (), msg="Running post install task")
 
 
 class PostDevelopCommand(develop):
     """Post-installation for development mode."""
     def run(self):
         develop.run(self)
-        self.execute(_post_install, (DATA_DIR,), msg="Running post install task")
+        self.execute(_post_install, (), msg="Running post install task")
 
 
-def _post_install(data_dir):
-    print(f"Downloading data into {DATA_DIR}")
+def _post_install():
+    data_dir = os.environ.get('COMET_DATA_DIR', None)
+
+    if data_dir is None:
+        data_dir = os.path.expanduser("~/.comet-data")
+        print(f"Did not find environment variable $COMET_DATA_DIR. Setting it to {data_dir}")
+        os.environ.set('COMET_DATA_DIR', data_dir)
+
+    print(f"Downloading data into {data_dir}")
     script = os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")
     subprocess.call(["chmod", "+x", script])
     subprocess.call(["/bin/bash", "-c", script, data_dir])
