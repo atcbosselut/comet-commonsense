@@ -39,7 +39,7 @@ def _post_install():
     print(f"Downloading data into {data_dir}")
     script = os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")
     subprocess.call(["chmod", "+x", script])
-    subprocess.call(["/bin/bash", "-c", script, data_dir])
+    subprocess.call(["/bin/bash", script, data_dir])
 
 
 setuptools.setup(
