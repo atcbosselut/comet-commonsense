@@ -99,6 +99,7 @@ def main():
     parser.add_argument("--num_train_epochs", default=2.0, type=float, help="Number of training epochs to perform.")
     parser.add_argument("--overwrite_cache", action="store_true", help="Overwrite the cached data.")
     parser.add_argument("--overwrite_out_dir", action="store_true", help="Overwrite the output directory.")
+    parser.add_argument("--continue_training", action="store_true", help="Continue training from the last checkpoint.")
     parser.add_argument("--save_steps", type=int, default=10000, help="Save checkpoint every X updates steps.")
     parser.add_argument("--save_total_limit", type=int, default=None, help="Maximum number of checkpoints to keep")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for initialization.")
@@ -111,8 +112,10 @@ def main():
         raise ValueError("Cannot do evaluation without an evaluation data file. Either supply --eval_data_file "
                          "or remove the --do_eval argument.")
 
-    if os.path.exists(args.out_dir) and os.listdir(args.out_dir) and args.do_train and not args.overwrite_out_dir:
-        raise ValueError(f"Output directory {args.out_dir} already exists and is not empty. Use --overwrite_out_dir.")
+    if os.path.exists(args.out_dir) and os.listdir(args.out_dir) and args.do_train and \
+            not args.overwrite_out_dir and not args.continue_training:
+        raise ValueError(f"Output directory {args.out_dir} already exists and is not empty. "
+                         f"Use --overwrite_out_dir or --continue_training.")
 
     # Setup device
     device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() and args.device != "cpu" else "cpu")
@@ -122,6 +125,9 @@ def main():
     set_seed(args)
 
     # Load the models
+    if args.continue_training:
+        args.model_name_or_path = args.out_dir
+
     tokenizer, model = init_model(args.model_name_or_path, device=args.device, do_lower_case=args.do_lower_case)
     args.block_size = tokenizer.max_len_single_sentence
     model.to(args.device)
