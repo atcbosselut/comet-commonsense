@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+COMET_DATA_DIR=$1
+
 # Get ATOMIC data
 echo "mkdir -p $COMET_DATA_DIR/data/atomic"
 mkdir -p $COMET_DATA_DIR/data/atomic;
