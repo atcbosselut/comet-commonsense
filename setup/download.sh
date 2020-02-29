@@ -7,7 +7,7 @@ echo "mkdir -p $COMET_DATA_DIR/data/atomic"
 mkdir -p $COMET_DATA_DIR/data/atomic;
 echo "wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz"
 wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz;
-echo "tar -xvzf atomic_data.tgz -C $COMET_DATA_DIRa/data/atomic/"
+echo "tar -xvzf atomic_data.tgz -C $COMET_DATA_DIR/data/atomic/"
 tar -xvzf atomic_data.tgz -C $COMET_DATA_DIR/data/atomic/;
 echo "rm atomic/atomic_data.tgz"
 rm atomic_data.tgz;

@@ -41,9 +41,9 @@ def main():
     args = parser.parse_args()
     logger.debug(args)
 
-    # if (args.k == args.p == args.num_beams == 0) or (
-    #         sum([1 if i > 0 else 0 for i in [args.k, args.p, args.num_beams]]) > 1):
-    #     raise ValueError("Exactly one of p, k, or num_beams should be set to a non-zero value.")
+    if (args.k == args.p == args.num_beams == 0) or (
+            sum([1 if i > 0 else 0 for i in [args.k, args.p, args.num_beams]]) > 1):
+        raise ValueError("Exactly one of p, k, or num_beams should be set to a non-zero value.")
 
     comet_model = PretrainedCometModel(args.model_name_or_path, device=args.device, do_lower_case=args.do_lower_case)
 
