@@ -41,15 +41,16 @@ class PretrainedCometModel(object):
 
         prefix = f"{input_event} <{category.lower()}>"
 
-        if num_beams > 0:
-            return self.beam_search(
-                prefix, num_beams=num_beams,
-                max_length=length, return_tokenized=return_tokenized)
+        with torch.no_grad():
+            if num_beams > 0:
+                return self.beam_search(
+                    prefix, num_beams=num_beams,
+                    max_length=length, return_tokenized=return_tokenized)
 
-        else:
-            return self.generate_by_sampling(
-                prefix, num_samples=num_samples, p=p, k=k, temperature=temperature,
-                max_length=length, return_tokenized=return_tokenized)
+            else:
+                return self.generate_by_sampling(
+                    prefix, num_samples=num_samples, p=p, k=k, temperature=temperature,
+                    max_length=length, return_tokenized=return_tokenized)
 
     def beam_search(self,
                     prefix: str,
@@ -64,85 +65,84 @@ class PretrainedCometModel(object):
         Because in HuggingFace's implementation they only return the top 1 sequence
         in greedy beam search.
         """
-        with torch.no_grad():
-            context_tokens = self.tokenizer.encode(prefix)
-            input_ids = torch.tensor(context_tokens, device=self.device).unsqueeze(0)
+        context_tokens = self.tokenizer.encode(prefix)
+        input_ids = torch.tensor(context_tokens, device=self.device).unsqueeze(0)
 
-            kill_mask = torch.ones(num_beams, num_beams).to(self.device) * 9000
-            kill_mask[:, 0] = 0
-            beam_seqs = input_ids.repeat(num_beams, 1)
+        kill_mask = torch.ones(num_beams, num_beams).to(self.device) * 9000
+        kill_mask[:, 0] = 0
+        beam_seqs = input_ids.repeat(num_beams, 1)
 
-            # First token
-            lm_probs = F.log_softmax(self.model(input_ids)[0], dim=-1)[:, -1, :].squeeze()
-            beam_lls, beam_toks = lm_probs.topk(num_beams)
-            beam_losses = [beam_lls]
+        # First token
+        lm_probs = F.log_softmax(self.model(input_ids)[0], dim=-1)[:, -1, :].squeeze()
+        beam_lls, beam_toks = lm_probs.topk(num_beams)
+        beam_losses = [beam_lls]
 
-            ended = (beam_toks == self.eos_token_id).float()
-            counts = (2 - ended)
+        ended = (beam_toks == self.eos_token_id).float()
+        counts = (2 - ended)
+        beam_seqs = torch.cat((beam_seqs, beam_toks.unsqueeze(-1)), 1)
+
+        for _ in range(max_length - 1):
+
+            # Next token for each beam
+            lm_probs = F.log_softmax(self.model(beam_seqs)[0], dim=-1)[:, -1, :].squeeze()
+            hyp_beam_lls, hyp_beam_toks = lm_probs.topk(num_beams)
+
+            # Compute masks and expand beam
+            expanded_ended = ended.unsqueeze(1).repeat(1, num_beams)
+            hypothesis_mask = expanded_ended * kill_mask + (1 - expanded_ended)
+            current_beam_lls = beam_lls.unsqueeze(1).repeat(1, num_beams).view(num_beams ** 2)
+
+            # Compute losses of hypotheses, masking those that have ended
+            hyp_beam_lls = (hyp_beam_lls.view(num_beams ** 2) * hypothesis_mask.view(-1)) + current_beam_lls
+
+            # Get normalizer for sequences
+            temp_counts = counts.unsqueeze(1).repeat(1, num_beams).view(num_beams ** 2)
+
+            # Select best beams with lowest aggregate loss
+            beam_lls, top_beam_idxs = (hyp_beam_lls / temp_counts).topk(num_beams)
+
+            # Update placements in beam based on selecetion
+            beam_losses = [i.index_select(0, top_beam_idxs // num_beams) for i in beam_losses]
+            ended = ended.index_select(0, top_beam_idxs // num_beams)
+            counts = temp_counts.index_select(0, top_beam_idxs)
+
+            # Save beam losses
+            beam_losses.append(beam_lls * counts)
+
+            # Update beam tokens
+            ended_mask = (1 - ended).long()
+            end_replacement = (self.eos_token_id * ended).long()
+            next_toks = hyp_beam_toks.view(-1)[top_beam_idxs]
+            beam_toks = next_toks * ended_mask + end_replacement
+
+            # Update ended and counts
+            ended = ended + (beam_toks == self.eos_token_id).float() * (1 - ended)
+            counts = counts + (1 - ended)
+
+            # Update beam sequences
+            beam_seqs = beam_seqs.t().repeat(num_beams, 1).t().contiguous().view(num_beams ** 2, -1)[
+                top_beam_idxs]
             beam_seqs = torch.cat((beam_seqs, beam_toks.unsqueeze(-1)), 1)
 
-            for _ in range(max_length - 1):
+            if (beam_toks == self.eos_token_id).sum().item() == num_beams:
+                break
 
-                # Next token for each beam
-                lm_probs = F.log_softmax(self.model(beam_seqs)[0], dim=-1)[:, -1, :].squeeze()
-                hyp_beam_lls, hyp_beam_toks = lm_probs.topk(num_beams)
+        beam_seqs = beam_seqs[:, len(context_tokens):]
 
-                # Compute masks and expand beam
-                expanded_ended = ended.unsqueeze(1).repeat(1, num_beams)
-                hypothesis_mask = expanded_ended * kill_mask + (1 - expanded_ended)
-                current_beam_lls = beam_lls.unsqueeze(1).repeat(1, num_beams).view(num_beams ** 2)
+        if return_tokenized:
+            texts = [self.tokenizer.convert_ids_to_tokens(t) for t in beam_seqs]
+            texts = [t[:t.index("<eos>")] if "<eos>" in t else t for t in texts]
+            texts = [[w for w in t if w != "<unk>"] for t in texts]
+            texts = [[w.replace("</w>", "") for w in t] for t in texts]
+            beam_seqs = [tuple(t) for t in texts if len(t) > 0]
+        else:
+            beam_seqs = [
+                re.sub(" +", " ", self.tokenizer.decode(
+                    seq, clean_up_tokenization_spaces=True).replace(
+                    "<eos>", "").replace("<unk>", "").replace("!", "").replace("<w/>", "").strip())
+                for seq in beam_seqs]
 
-                # Compute losses of hypotheses, masking those that have ended
-                hyp_beam_lls = (hyp_beam_lls.view(num_beams ** 2) * hypothesis_mask.view(-1)) + current_beam_lls
-
-                # Get normalizer for sequences
-                temp_counts = counts.unsqueeze(1).repeat(1, num_beams).view(num_beams ** 2)
-
-                # Select best beams with lowest aggregate loss
-                beam_lls, top_beam_idxs = (hyp_beam_lls / temp_counts).topk(num_beams)
-
-                # Update placements in beam based on selecetion
-                beam_losses = [i.index_select(0, top_beam_idxs // num_beams) for i in beam_losses]
-                ended = ended.index_select(0, top_beam_idxs // num_beams)
-                counts = temp_counts.index_select(0, top_beam_idxs)
-
-                # Save beam losses
-                beam_losses.append(beam_lls * counts)
-
-                # Update beam tokens
-                ended_mask = (1 - ended).long()
-                end_replacement = (self.eos_token_id * ended).long()
-                next_toks = hyp_beam_toks.view(-1)[top_beam_idxs]
-                beam_toks = next_toks * ended_mask + end_replacement
-
-                # Update ended and counts
-                ended = ended + (beam_toks == self.eos_token_id).float() * (1 - ended)
-                counts = counts + (1 - ended)
-
-                # Update beam sequences
-                beam_seqs = beam_seqs.t().repeat(num_beams, 1).t().contiguous().view(num_beams ** 2, -1)[
-                    top_beam_idxs]
-                beam_seqs = torch.cat((beam_seqs, beam_toks.unsqueeze(-1)), 1)
-
-                if (beam_toks == self.eos_token_id).sum().item() == num_beams:
-                    break
-
-            beam_seqs = beam_seqs[:, len(context_tokens):]
-            
-            if return_tokenized:
-                texts = [self.tokenizer.convert_ids_to_tokens(t) for t in beam_seqs]
-                texts = [t[:t.index("<eos>")] if "<eos>" in t else t for t in texts]
-                texts = [[w for w in t if w != "<unk>"] for t in texts]
-                texts = [[w.replace("</w>", "") for w in t] for t in texts]
-                beam_seqs = [tuple(t) for t in texts if len(t) > 0]
-            else:
-                beam_seqs = [
-                    re.sub(" +", " ", self.tokenizer.decode(
-                        seq, clean_up_tokenization_spaces=True).replace(
-                        "<eos>", "").replace("<unk>", "").replace("!", "").replace("<w/>", "").strip())
-                    for seq in beam_seqs]
-
-            return beam_seqs
+        return beam_seqs
 
     def generate_by_sampling(self,
                              prefix: str,
