@@ -35,7 +35,7 @@ def _post_install():
     if data_dir is None:
         data_dir = os.path.expanduser("~/.comet-data")
         print(f"Did not find environment variable $COMET_DATA_DIR. Setting it to {data_dir}")
-        os.environ.set('COMET_DATA_DIR', data_dir)
+        os.environ["COMET_DATA_DIR"] = data_dir
 
     print(f"Downloading data into {data_dir}")
     script = os.path.join(BUILD_DIR, os.pardir, "setup", "download.sh")
