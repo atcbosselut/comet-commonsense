@@ -21,6 +21,6 @@ echo "tar -xvzf atomic_pretrained_model_openai-gpt.zip"
 tar -xvzf  atomic_pretrained_model_openai-gpt.zip;
 echo "rm atomic_pretrained_model_openai-gpt.zip"
 rm atomic_pretrained_model_openai-gpt.zip;
-echo "mv models/gpt $COMET_DATA_DIR/models/atomic_pretrained_model_openai-gpt"
+echo "mv models/gpt/* $COMET_DATA_DIR/models/atomic_pretrained_model_openai-gpt"
 mv models/gpt/* $COMET_DATA_DIR/models/atomic_pretrained_model_openai-gpt;
 
