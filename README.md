@@ -8,6 +8,8 @@ For the original version see: [atcbosselut/comet-commonsense](https://github.com
 
 ### Installation
 
+Define the `COMET_DATA_DIR` environment variable, otherwise the data will be saved in `~/.comet-data`. 
+
 Install the repository. This will also download the ATOMIC dataset and the pre-trained COMET model:
 
 

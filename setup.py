@@ -33,7 +33,7 @@ def _post_install():
     data_dir = os.environ.get('COMET_DATA_DIR', None)
 
     if data_dir is None:
-        data_dir = "/usr/local/.comet-data"
+        data_dir = os.path.expanduser("~/.comet-data")
         print(f"Did not find environment variable $COMET_DATA_DIR. Using {data_dir}")
 
     print(f"Downloading data into {data_dir}")
