@@ -27,11 +27,11 @@ The installation comes with a pre-trained model based on GPT.
 
 >>> comet_model = PretrainedCometModel(device=1)
 
->>> comet_model.predict("PersonX asked PersonY for an example for the demo", "xWant")
-['to have y respond to personx']
+>>> comet_model.predict("PersonX asked PersonY what they thought of the demo", "xWant", num_beams=5)
+['to listen to persony', 'to see what they think', 'to see what persony thinks', 'to see if persony likes it', "to listen to persony's response"]
 
->>> comet_model.predict("PersonX just woke up", "xEffect")
-['gets out of bed']
+>>> comet_model.predict("PersonX went to the grocery store", "xEffect", p=0.9, num_samples=5)
+['personx gets something to eat', 'buys the food', 'makes a purchase', 'bought groceries', 'they bought some snacks']
 ```
 
 The performance of the pre-trained model is:
