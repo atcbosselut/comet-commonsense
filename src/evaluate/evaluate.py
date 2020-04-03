@@ -40,7 +40,7 @@ class Evaluator(object):
         # Set evaluation mode
         model.eval()
 
-        start = time.time()
+        start_time = time.time()
 
         # Initialize progress bar
         bar = utils.set_progress_bar(
@@ -77,7 +77,7 @@ class Evaluator(object):
         torch.cuda.synchronize()
 
         print("{} evaluation completed in: {} s".format(
-            split.capitalize(), time.time() - start))
+            split.capitalize(), round(time.time() - start_time, 4)))
 
         average_loss = self.compute_final_scores(
             average_loss, nums)
