@@ -20,7 +20,7 @@ bash scripts/setup/get_model_files.sh
 Then install dependencies (assuming you already have Python 3.6 and Pytorch >= 1.0:
 
 ```
-pip install tensorflow
+conda install tensorflow
 pip install ftfy==5.1
 conda install -c conda-forge spacy
 python -m spacy download en
