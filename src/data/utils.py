@@ -58,7 +58,7 @@ class TextEncoder(object):
 
     def __init__(self, encoder_path, bpe_path):
         self.nlp = spacy.load(
-            'en', disable=['parser', 'tagger', 'ner', 'textcat'])
+            'en_core_web_sm', disable=['parser', 'tagger', 'ner', 'textcat', 'lemmatizer'])
         self.encoder = json.load(open(encoder_path))
         self.decoder = {v: k for k, v in self.encoder.items()}
         merges = open(bpe_path, encoding='utf-8').read().split('\n')[1:-1]
@@ -73,7 +73,7 @@ class TextEncoder(object):
         pairs = get_pairs(word)
 
         if not pairs:
-            return token+'</w>'
+            return token + '</w>'
 
         while True:
             bigram = min(pairs, key=lambda pair: self.bpe_ranks.get(
@@ -93,8 +93,8 @@ class TextEncoder(object):
                     break
 
                 if (word[i] == first and i < len(word) - 1 and
-                        word[i+1] == second):
-                    new_word.append(first+second)
+                        word[i + 1] == second):
+                    new_word.append(first + second)
                     i += 2
                 else:
                     new_word.append(word[i])
