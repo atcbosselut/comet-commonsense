@@ -1,4 +1,4 @@
-wget https://homes.cs.washington.edu/~msap/atomic/data/atomic_data.tgz
+wget https://storage.googleapis.com/ai2-mosaic/public/atomic/v1.0/atomic_data.tgz
 mkdir -p data/atomic
 mv atomic_data.tgz data/atomic
 
